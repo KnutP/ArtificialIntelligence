@@ -1,0 +1,167 @@
+package sudoku;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class Sudoku {
+
+	private static int boardSize = 0;
+	private static int partitionSize = 0;
+	
+	public static void main(String[] args){
+		String filename = "sudoku9Easy.txt";
+		File inputFile = new File(filename);
+		Scanner input = null;
+		int[][] vals = null;
+		
+		ArrayList<Variable> vars = new ArrayList<Variable>();
+
+		int temp = 0;
+    	int count = 0;
+    	
+	    try {
+			input = new Scanner(inputFile);
+			temp = input.nextInt();
+			boardSize = temp;
+			partitionSize = (int) Math.sqrt(boardSize);
+			System.out.println("Boardsize: " + temp + "x" + temp);
+			vals = new int[boardSize][boardSize];			
+			
+			System.out.println("Input:");
+	    	int i = 0;
+	    	int j = 0;
+	    	while (input.hasNext()){
+	    		temp = input.nextInt();
+	    		count++;
+	    		System.out.printf("%3d", temp);
+	    		vals[i][j] = temp;
+				if (temp == 0) {
+					vars.add(new Variable(i,j));
+					// TODO
+				} 
+				j++;
+				if (j == boardSize) {
+					j = 0;
+					i++;
+					System.out.println();
+				}
+				if (j == boardSize) {
+					break;
+				}
+	    	}
+	    	input.close();
+	    } catch (FileNotFoundException exception) {
+	    	System.out.println("Input file not found: " + filename);
+	    }
+	    if (count != boardSize*boardSize) throw new RuntimeException("Incorrect number of inputs.");
+	    
+	    
+		boolean solved = solve(vars, vals, 0);
+		
+		// Output
+		if (!solved) {
+			System.out.println("No solution found.");
+			return;
+		}
+		System.out.println("\nOutput\n");
+		for (int i = 0; i < boardSize; i++) {
+			for (int j = 0; j < boardSize; j++) {
+				System.out.printf("%3d", vals[i][j]);
+			}
+			System.out.println();
+		}		
+		
+	}
+	
+	public static boolean solve(ArrayList<Variable> assignments, int[][] vals, int varIndex){
+		
+		if(varIndex >= assignments.size()) {
+			System.out.println("No more vars");
+			return false;
+		}
+		System.out.println(varIndex);
+		
+		Variable currentVar = assignments.get(varIndex);
+		
+		while(currentVar.value <= 9) {
+			
+			if (consistent(currentVar, vals)) {
+				vals[currentVar.row][currentVar.col] = currentVar.value;
+				printBoard(vals);
+				
+				if(varIndex == assignments.size()-1) {
+					return true;
+				}
+				
+				if(solve(assignments, vals, varIndex+1)) {
+					return true;
+				}
+				
+			}
+			
+			currentVar.value++;
+		}
+		
+		currentVar.value = 1;
+		System.out.println("No more possible #s");
+		return false;
+	}
+	
+	public static void printBoard(int[][] vals){
+		System.out.println("\nOutput\n");
+		for (int i = 0; i < boardSize; i++) {
+			for (int j = 0; j < boardSize; j++) {
+				System.out.printf("%3d", vals[i][j]);
+			}
+			System.out.println();
+		}
+	}
+	
+	public static boolean consistent(Variable temp, int[][] vals) {
+		int val = temp.value;
+		
+		// check column
+		for(int i = 0; i < vals.length; i++) {
+			if(vals[i][temp.col] == val) {
+				return false;
+			}
+		}
+		
+		// check row
+		for(int j = 0; j < vals.length; j++) {
+			if(vals[temp.row][j] == val) {
+				return false;
+			}
+		}
+		
+		// check box
+		int boxI = temp.col - temp.col % 3;
+		int boxJ = temp.row - temp.row % 3;
+		for(int i = boxI; i < boxI+3; i++) {
+			for(int j = boxJ; j < boxJ+3; j++) {
+				if(vals[i][j] == val) {
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+		
+}
+
+
+class Variable {
+	int value;
+	int row;
+	int col;
+	
+	Variable(int row, int col) {
+		this.row = row;
+		this.col = col;
+		this.value = 1;
+	}
+	
+}
