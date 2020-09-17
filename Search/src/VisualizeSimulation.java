@@ -32,7 +32,7 @@ public class VisualizeSimulation extends JFrame {
 	 */
 	public VisualizeSimulation() {
 		// TODO: change the following to run the simulation on different maps.
-		String filename = "Map0.txt";
+		String filename = "Map10.txt";
 		LinkedList<String> map = new LinkedList<> ();
 	    try {
 			File inputFile = new File(filename);
@@ -78,7 +78,7 @@ class EnvironmentPanel extends JPanel{
 	private LinkedList<Position> targets;
 	private int timesteps, timestepsStop;
 	//TODO: Change TILESIZE if you want to enlarge the visualization.
-	public static final int TILESIZE = 15;
+	public static final int TILESIZE = 35;
 	//TODO: Change the timeStepSpeed to speed-up or slow down the animation.
 	// 500 millisecond time steps
 	private int timeStepSpeed = 100;
