@@ -32,7 +32,7 @@ public class VisualizeSimulation extends JFrame {
 	 */
 	public VisualizeSimulation() {
 		// TODO: change the following to run the simulation on different maps.
-		String filename = "Map10.txt";
+		String filename = "Map5.txt";
 		LinkedList<String> map = new LinkedList<> ();
 	    try {
 			File inputFile = new File(filename);

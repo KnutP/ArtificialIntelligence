@@ -1,4 +1,3 @@
-import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,7 +21,7 @@ public class Robot {
 	private boolean pathFound;
 	private long openCount;
 	private int pathLength;
-	private Iterator pathIterator;
+	private Iterator<Action> pathIterator;
 
 	/**
 	 * Initializes a Robot on a specific tile in the environment.
@@ -85,11 +84,11 @@ public class Robot {
 	 * functions.
 	 */
 	public Action getAction() {
-		if(pathIterator == null || !pathIterator.hasNext()) {
+		if (pathIterator == null || !pathIterator.hasNext()) {
 			return Action.DO_NOTHING;
 		}
-		return (Action)pathIterator.next();
-		
+		return (Action) pathIterator.next();
+
 	}
 
 	/**
@@ -102,84 +101,108 @@ public class Robot {
 	public void bfs() {
 		LinkedList<Position> targets = env.getTargets();
 		LinkedList<Position> open = new LinkedList<>();
-		HashMap<Position, Position> previous = new HashMap<>();
 		open.add(new Position(posRow, posCol));
 		openCount++;
 
 		LinkedList<Position> closed = new LinkedList<Position>();
-
-		Position pos = null;
 		
-
-		while (!targets.isEmpty()) {
-			if(open.isEmpty()) {
-				return; // no solution
-			}
+		HashMap<Position, Position> previous = new HashMap<>();
+		
+		Position pos = null;
+		Position target = findNextTarget(posRow, posCol, targets);
+		
+		while(target != null) {
 			
-			pos = open.pop();
-			closed.add(pos);
+			while (!open.isEmpty()) {
 
-			if (containsPos(pos.row, pos.col, targets)) {
-				ArrayList<Position> toRemove = new ArrayList<>();
-				for(Position p : targets) {
-					if(p.col == pos.col && p.row == pos.row)
-						toRemove.add(p);
+				pos = open.pop();
+				closed.add(pos);
+
+				if (pos.row == target.row && pos.col == target.col) {
+					closed.clear();
+					open.clear();
+					open.add(pos);
+					break;
 				}
-				targets.removeAll(toRemove);
-//				closed.clear();
-//				open.clear();
-				continue;
-			}
 
-			// check the 4 possible successors
-			int[] iVals = {-1, 0, 0, 1};
-			int[] jVals = {0, -1, 1, 0};
-			for (int k = 0; k < 4; k++) {
-				int i = pos.row + iVals[k];
-				int j = pos.col + jVals[k];
-				
-					if(!containsPos(i, j, open) && !containsPos(i, j, closed) && (env.getTileStatus(i, j) != TileStatus.IMPASSABLE)) {
+				// check the 4 possible successors
+				int[] iVals = { -1, 0, 0, 1 };
+				int[] jVals = { 0, -1, 1, 0 };
+				for (int k = 0; k < 4; k++) {
+					int i = pos.row + iVals[k];
+					int j = pos.col + jVals[k];
+
+					if (!containsPos(i, j, open) && !containsPos(i, j, closed)
+							&& (env.getTileStatus(i, j) != TileStatus.IMPASSABLE)) {
 						Position successor = new Position(i, j);
 						open.add(successor);
 						previous.put(successor, pos);
 						openCount++;
 					}
-			}
+				}
 
-		}
-		
-		Position last;
-		while (previous.containsKey(pos)) {
-			last = previous.get(pos);
-			
-			if(pos.row - last.row > 0) {
-				path.add(Action.MOVE_RIGHT);
-			} else if (pos.row - last.row < 0) {
-				path.add(Action.MOVE_LEFT);
-			} else if (pos.col - last.col > 0) {
-				path.add(Action.MOVE_DOWN);
-			} else {
-				path.add(Action.MOVE_UP);
+			}
+			if(open.isEmpty()) {
+				return;
 			}
 			
-			pos = last;
+			targets.remove(target);
+			target = findNextTarget(pos.row, pos.col, targets);
 		}
-		Collections.reverse(path);
 		
-		pathLength = path.size();
+		path = buildPath(pos, previous);
+		
 		pathFound = true;
+		pathLength = path.size();
 		pathIterator = path.iterator();
+	}
+	
+	private ArrayList<Position[]> generatePermutations(LinkedList<Position> targets) {
+		ArrayList<Position[]> targetPermutations = new ArrayList<>();
+		
+		Position[] targetList = targets.toArray(new Position[targets.size()]);
+		int n = targetList.length;
+		
+		int[] indexes = new int[n];
+//		for (int i = 0; i < n; i++) {
+//		    indexes[i] = 0;
+//		}
+		
+		targetPermutations.add(targetList.clone());
+		 
+		int i = 0;
+		while (i < n) {
+		    if (indexes[i] < i) {
+		        swap(targetList, i % 2 == 0 ?  0: indexes[i], i);
+		        targetPermutations.add(targetList.clone());
+		        indexes[i]++;
+		        i = 0;
+		    }
+		    else {
+		        indexes[i] = 0;
+		        i++;
+		    }
+		}
+		
+		return targetPermutations;
+	}
+	
+	private void swap(Position[] input, int a, int b) {
+	    Position temp = input[a];
+	    input[a] = input[b];
+	    input[b] = temp;
 	}
 
 	private boolean containsPos(int row, int col, LinkedList<Position> list) {
-		
-		for(Position p : list) {
-			if(p.col == col && p.row == row)
+
+		for (Position p : list) {
+			if (p.col == col && p.row == row)
 				return true;
 		}
 		return false;
 	}
 
+	
 	/**
 	 * This method implements A* search for maps 0-5. It populates the path
 	 * LinkedList and sets pathFound to true, if a path has been found.
@@ -188,7 +211,131 @@ public class Robot {
 	 * 
 	 */
 	public void astar() {
+		LinkedList<Position> targets = env.getTargets();
+		Position target = targets.get(0); // TODO Change
 
+		State current = new State(posRow, posCol, h1(posRow, posCol, target), 0);
+		PriorityQueue<State> open = new PriorityQueue<>();
+		HashMap<State, State> previous = new HashMap<>();
+
+		open.add(current);
+		openCount++;
+
+		LinkedList<State> closed = new LinkedList<State>();
+
+		while (!open.isEmpty()) {
+
+			if (current.row == target.row && current.col == target.col) {
+				// toRemove.add(target);
+				closed.clear();
+				open.clear();
+				open.add(current);
+				continue;
+			}
+
+			closed.add(current);
+
+			// check the 4 possible successors
+			int[] iVals = { -1, 0, 0, 1 };
+			int[] jVals = { 0, -1, 1, 0 };
+			for (int k = 0; k < 4; k++) {
+				int i = current.row + iVals[k];
+				int j = current.col + jVals[k];
+
+				State successor;
+
+				if (containsPos(i, j, closed)) {
+					for (State p : closed) {
+						if (p.row == i && p.row == j) {
+							successor = p;
+							if (successor.gScore < current.gScore) {
+								current.gScore = successor.gScore;
+								previous.put(successor, current);
+							}
+						}
+					}
+				} else if (containsPos(i, j, open)) {
+					for (State p : open) {
+						if (p.row == i && p.row == j) {
+							successor = p;
+							if (successor.gScore < current.gScore) {
+								current.gScore = successor.gScore;
+								previous.put(successor, current);
+							}
+						}
+					}
+				} else {
+					int gScore = current.gScore + 1;
+					int fScore = gScore + h1(i, j, target);
+					successor = new State(i, j, fScore, gScore);
+					open.add(successor);
+					openCount++;
+				}
+
+			}
+
+		}
+
+	}
+
+	class State implements Comparable<State> {
+		public int row;
+		public int col;
+		public int fScore;
+		public int gScore;
+
+		State(int row, int col, int fScore, int gScore) {
+			this.row = row;
+			this.col = col;
+			this.fScore = fScore;
+			this.gScore = gScore;
+		}
+
+		public boolean equals(State other) {
+			return row == other.row && col == other.col;
+		}
+
+		public boolean equals(Position other) {
+			return row == other.row && col == other.col;
+		}
+
+		@Override
+		public int compareTo(State other) {
+			return this.fScore-other.fScore;
+		}
+
+	}
+
+	private int h1(int row, int col, Position target) {
+		return Math.abs(row - target.row) + Math.abs(col - target.col);
+	}
+
+	private boolean containsPos(int row, int col, Iterable<State> T) {
+
+		for (State p : T) {
+			if (p.col == col && p.row == row)
+				return true;
+		}
+		return false;
+	}
+	
+	private Position findNextTarget(int row, int col, LinkedList<Position> targets) {
+		if(targets.isEmpty()) {
+			return null;
+		}
+		
+		Position target = targets.getFirst();
+		
+		int smallestDist = h1(row, col, target);
+		
+		for(Position p : targets) {
+			if(h1(row, col, p) < smallestDist) {
+				smallestDist = h1(row, col, p);
+				target = p;
+			}
+		}
+		
+		return target;
 	}
 
 	/**
@@ -211,6 +358,29 @@ public class Robot {
 	 */
 	public void astar141516() {
 
+	}
+
+	private LinkedList<Action> buildPath(Position pos, HashMap<Position, Position> previous) {
+		LinkedList<Action> route = new LinkedList<>();
+		Position last;
+
+		while (previous.containsKey(pos)) {
+			last = previous.get(pos);
+
+			if (pos.row - last.row > 0) {
+				route.add(Action.MOVE_RIGHT);
+			} else if (pos.row - last.row < 0) {
+				route.add(Action.MOVE_LEFT);
+			} else if (pos.col - last.col > 0) {
+				route.add(Action.MOVE_DOWN);
+			} else {
+				route.add(Action.MOVE_UP);
+			}
+
+			pos = last;
+		}
+		Collections.reverse(route);
+		return route;
 	}
 
 }
