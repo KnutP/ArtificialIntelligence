@@ -32,7 +32,7 @@ public class VisualizeSimulation extends JFrame {
 	 */
 	public VisualizeSimulation() {
 		// TODO: change the following to run the simulation on different maps.
-		String filename = "Map5.txt";
+		String filename = "Map4.txt";
 		LinkedList<String> map = new LinkedList<> ();
 	    try {
 			File inputFile = new File(filename);
@@ -52,7 +52,8 @@ public class VisualizeSimulation extends JFrame {
 		Environment env = new Environment(map, robotPos); // Modify for multiple robots MIW
 		Robot robot = new Robot(env, robotPos.row, robotPos.col);
 		// TODO: Change the following to the search algorithm you are testing.
-		robot.bfs();
+//		robot.bfs();
+		robot.astar();
 	
 		ArrayList<Robot> robots = new ArrayList<Robot>();
 		robots.add(robot);
