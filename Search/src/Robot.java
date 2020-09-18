@@ -190,7 +190,7 @@ public class Robot {
 
 			current = open.poll();
 			closed.add(current);
-			
+
 			if (current.row == target.row && current.col == target.col) {
 				// toRemove.add(target);
 				closed.clear();
@@ -198,7 +198,6 @@ public class Robot {
 				open.add(current);
 				break;
 			}
-			
 
 			// check the 4 possible successors
 			int[] iVals = { -1, 0, 0, 1 };
@@ -209,18 +208,7 @@ public class Robot {
 
 				State successor;
 
-				if (containsPos(i, j, closed)) {
-					for (State p : closed) {
-						if (p.row == i && p.row == j) {
-							successor = p;
-//							if (successor.gScore < current.gScore) {
-//								current.gScore = successor.gScore;
-//								current.fScore = current.gScore + h1(i, j, target);
-//								previous.put(successor, current);
-//							}
-						}
-					}
-				} else if (containsPos(i, j, open)) {
+				if (containsPos(i, j, open)) {
 					for (State p : open) {
 						if (p.row == i && p.row == j) {
 							successor = p;
@@ -231,7 +219,7 @@ public class Robot {
 							}
 						}
 					}
-				} else if ((env.getTileStatus(i, j) != TileStatus.IMPASSABLE)) {
+				} else if ((env.getTileStatus(i, j) != TileStatus.IMPASSABLE) && !containsPos(i, j, closed)) {
 					int gScore = current.gScore + 1;
 					int fScore = gScore + h1(i, j, target);
 					successor = new State(i, j, fScore, gScore);
@@ -245,12 +233,9 @@ public class Robot {
 
 		}
 		if (open.isEmpty()) {
-			System.out.println("no solution");
 			return;
 		}
-		
-		System.out.println("done");
-		
+
 		path = buildPath(current, previous);
 
 		pathFound = true;
@@ -328,7 +313,78 @@ public class Robot {
 	 * 
 	 */
 	public void astar101112() {
+		LinkedList<Position> targets = env.getTargets();
+		Position target = findNextTarget(posRow, posCol, targets);
 
+		State current = new State(posRow, posCol, h1(posRow, posCol, target), 0);
+		PriorityQueue<State> open = new PriorityQueue<>();
+		HashMap<State, State> previous = new HashMap<>();
+
+		open.add(current);
+		openCount++;
+
+		LinkedList<State> closed = new LinkedList<State>();
+
+		while (target != null) {
+			while (!open.isEmpty()) {
+
+				current = open.poll();
+				closed.add(current);
+
+				if (current.row == target.row && current.col == target.col) {
+					// toRemove.add(target);
+					closed.clear();
+					open.clear();
+					open.add(current);
+					break;
+				}
+
+				// check the 4 possible successors
+				int[] iVals = { -1, 0, 0, 1 };
+				int[] jVals = { 0, -1, 1, 0 };
+				for (int k = 0; k < 4; k++) {
+					int i = current.row + iVals[k];
+					int j = current.col + jVals[k];
+
+					State successor;
+
+					if (containsPos(i, j, open)) {
+						for (State p : open) {
+							if (p.row == i && p.row == j) {
+								successor = p;
+								if (successor.gScore < current.gScore) {
+									current.gScore = successor.gScore;
+									current.fScore = current.gScore + h1(i, j, target);
+									previous.put(successor, current);
+								}
+							}
+						}
+					} else if ((env.getTileStatus(i, j) != TileStatus.IMPASSABLE) && !containsPos(i, j, closed)) {
+						int gScore = current.gScore + 1;
+						int fScore = gScore + h1(i, j, target);
+						successor = new State(i, j, fScore, gScore);
+						open.add(successor);
+						openCount++;
+						previous.put(successor, current);
+					}
+
+				}
+
+			}
+			if (open.isEmpty()) {
+				return;
+			}
+
+			targets.remove(target);
+			target = findNextTarget(current.row, current.col, targets);
+		}
+
+		path = buildPath(current, previous);
+
+		pathFound = true;
+		pathLength = path.size();
+		pathIterator = path.iterator();
+		System.out.println(pathLength);
 	}
 
 	/**
@@ -339,7 +395,7 @@ public class Robot {
 	 * 
 	 */
 	public void astar141516() {
-
+		astar101112();
 	}
 
 	private LinkedList<Action> buildPath(Position pos, HashMap<Position, Position> previous) {
@@ -349,11 +405,11 @@ public class Robot {
 		while (previous.containsKey(pos)) {
 			last = previous.get(pos);
 
-			if (pos.row - last.row > 0) {
+			if (pos.col - last.col > 0) {
 				route.add(Action.MOVE_RIGHT);
-			} else if (pos.row - last.row < 0) {
+			} else if (pos.col - last.col < 0) {
 				route.add(Action.MOVE_LEFT);
-			} else if (pos.col - last.col > 0) {
+			} else if (pos.row - last.row > 0) {
 				route.add(Action.MOVE_DOWN);
 			} else {
 				route.add(Action.MOVE_UP);
@@ -364,7 +420,7 @@ public class Robot {
 		Collections.reverse(route);
 		return route;
 	}
-	
+
 	private LinkedList<Action> buildPath(State pos, HashMap<State, State> previous) {
 		LinkedList<Action> route = new LinkedList<>();
 		State last;
@@ -372,18 +428,17 @@ public class Robot {
 		while (previous.containsKey(pos)) {
 			last = previous.get(pos);
 
-			if (pos.row - last.row > 0) {
+			if (pos.col - last.col > 0) {
 				route.add(Action.MOVE_RIGHT);
-			} else if (pos.row - last.row < 0) {
+			} else if (pos.col - last.col < 0) {
 				route.add(Action.MOVE_LEFT);
-			} else if (pos.col - last.col > 0) {
+			} else if (pos.row - last.row > 0) {
 				route.add(Action.MOVE_DOWN);
 			} else {
 				route.add(Action.MOVE_UP);
 			}
 
 			pos = last;
-			System.out.println("stuck");
 		}
 		Collections.reverse(route);
 		return route;

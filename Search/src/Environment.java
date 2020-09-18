@@ -40,8 +40,8 @@ public class Environment {
 	public int getCols() { return this.cols; }
 
 	public LinkedList<Position> getTargets(){
-		return this.targets;
-//		return (LinkedList<Position>) this.targets.clone();
+//		return this.targets;
+		return (LinkedList<Position>) this.targets.clone();
 	}
 
 	/*
