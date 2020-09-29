@@ -1,0 +1,2 @@
+commit_dialog_history_messages=<?xml version\="1.0" encoding\="UTF-8"?>\r\n<messages>\r\n<message>A* works for 101112, kinda for the last 3. As good as it&apos;s going to get.</message>\r\n<message>A* works for single targets.</message>\r\n<message>BFS works for multiple targets, but not optimal.</message>\r\n<message>BFS works for single targets.</message>\r\n<message>Starter code</message>\r\n</messages>
+eclipse.preferences.version=1
