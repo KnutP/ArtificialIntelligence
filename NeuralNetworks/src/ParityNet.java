@@ -7,7 +7,7 @@ public class ParityNet {
 	
 	private int inputLayerSize = 7;
 	private int hiddenLayerSize = 7;
-	private int numHiddenLayers = 1;
+	private int numHiddenLayers = 5;
 	private int outputLayerSize = 1;
 	private int maxLayerSize = 0;
 	private static double threshold = 0.01;
@@ -67,22 +67,62 @@ public class ParityNet {
 		for (int l = 0; l < this.numHiddenLayers+1; l++) {
 			for (int i = 0; i < this.hiddenLayerSize; i++){
 				for (int j = 0; j < this.hiddenLayerSize; j++){
-					//this.weights[l][i][j] = 0;
-					// new
-					if(l < this.numHiddenLayers-1) {
-						this.weights[l][i][j] = 1;
-					} else if(i % 2 == 0) {
-						this.weights[l][i][j] = 1;
-					} else {
-						this.weights[l][i][j] = -1;
-					}
-					
+					this.weights[l][i][j] = 0;
 				}
 			}
 		}
 		
 		//TODO: set the weights manually
 		
+		// **** FIRST XOR GATES ****
+		
+		// first layer
+		int l = 0;
+		for(int i =  0; i < this.hiddenLayerSize-1; i+=2) {
+			this.weights[l][i][i] = 1;
+			this.weights[l][i][i+1] = -1;
+			this.weights[l][i+1][i] = -1;
+			this.weights[l][i+1][i+1] = 1;
+		}
+		this.weights[l][this.hiddenLayerSize-1][this.hiddenLayerSize-1] = 1;
+		
+		// second layer
+		l = 1;
+		for(int i =  0; i < this.hiddenLayerSize-1; i+=2) {
+			this.weights[l][i][i] = 1;
+			this.weights[l][i+1][i] = 1;
+		}
+		this.weights[l][this.hiddenLayerSize-1][this.hiddenLayerSize-1] = 1;
+		
+		// **** SECOND XOR GATES ****
+		l = 2;
+		for(int i =  0; i < this.hiddenLayerSize-3; i+=4) {
+			this.weights[l][i][i] = 1;
+			this.weights[l][i][i+2] = -1;
+			this.weights[l][i+2][i] = -1;
+			this.weights[l][i+2][i+2] = 1;
+		}
+		
+		l = 3;
+		for(int i =  0; i < this.hiddenLayerSize; i+=4) {
+			this.weights[l][i][i] = 1;
+			this.weights[l][i+2][i] = 1;
+		}
+		
+		// **** THIRD XOR GATES ****
+		l = 4;
+		for(int i =  0; i < this.hiddenLayerSize; i+=8) {
+			this.weights[l][i][i] = 1;
+			this.weights[l][i][i+4] = -1;
+			this.weights[l][i+4][i] = -1;
+			this.weights[l][i+4][i+4] = 1;
+		}
+		
+		l = 5;
+		for(int i =  0; i < this.hiddenLayerSize; i+=8) {
+			this.weights[l][i][i] = 1;
+			this.weights[l][i+4][i] = 1;
+		}
 
 	}
 
