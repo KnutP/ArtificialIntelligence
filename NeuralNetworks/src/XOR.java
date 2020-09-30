@@ -9,10 +9,11 @@ public class XOR {
 
 	private static int trainingSetSize = 0;
 	private static int inputLayerSize = 2;
-	private static int hiddenLayerSize = 3;
+	private static int hiddenLayerSize = 5;
 	private static double[][] hiddenLayerWeights; // [from][to]
 	private static double[] outputLayerWeights;
 	private static double learningRate = 0.1; //experiment 
+	private static double threshold = 0.3;
 	
 	private static void initNetwork() {
 		trainingSetSize = trainingData.length;
@@ -38,6 +39,13 @@ public class XOR {
 		return 1.0 / (1 + Math.exp(-1.0 * input));
 	}
 	
+	private static double stepActivationFunction(double input) {
+//		System.out.println(input);
+		if (input >= threshold)
+			return 1;
+		return 0;
+	}
+	
 	private static double derivative(double value){
 		return value * (1 - value);
 	}
@@ -45,13 +53,13 @@ public class XOR {
 	public static void main(String[] args){
 		initNetwork();
 		trainNetwork();
-//		printWeights();
+		printWeights();
 		testNetwork();
 	}
 	
 	private static void trainNetwork(){
 		// k episodes
-		for (int k = 0; k < 1000; k++){
+		for (int k = 0; k < 15; k++){
 			//Run through entire training set once.
 			for (int example = 0; example < trainingSetSize; example++){
 				double[] activationInput = new double[inputLayerSize]; // We store the activation of each node (over all input and hidden layers) as we need that data during back propagation.
@@ -66,7 +74,8 @@ public class XOR {
 					for (int inputNode = 0; inputNode < 2; inputNode++){
 						inputToNeuron += hiddenLayerWeights[inputNode][hiddenNode] * activationInput[inputNode];
 					}
-					activationHidden[hiddenNode] = sigmoidActivationFunction(inputToNeuron);
+					//activationHidden[hiddenNode] = sigmoidActivationFunction(inputToNeuron);
+					activationHidden[hiddenNode] = stepActivationFunction(inputToNeuron);
 				}
 
 				// For the XOR network, we assume one output node.
@@ -74,18 +83,20 @@ public class XOR {
 				for (int hiddenNode = 0; hiddenNode < hiddenLayerSize; hiddenNode++){
 					inputAtOutput += outputLayerWeights[hiddenNode] * activationHidden[hiddenNode];
 				}
-				double activationOutput = sigmoidActivationFunction(inputAtOutput);
+				//double activationOutput = sigmoidActivationFunction(inputAtOutput);
+				double activationOutput = stepActivationFunction(inputAtOutput);
 				
 				// calculating errors
 				// desired output is on array location 2; need to get rid of constant
-				double errorOfOutputNode = derivative(activationOutput) * (trainingData[example][2] - activationOutput);
+//				double errorOfOutputNode = derivative(activationOutput) * (trainingData[example][2] - activationOutput);
+				double errorOfOutputNode = (trainingData[example][2] - activationOutput);
 
 				// Calculating error of hidden layer. Special calculation since we only have one output node; i.e. no summation over next layer nodes
 				// Also adjusting weights of output layer
 				double[] errorOfHiddenNode = new double[hiddenLayerSize];
 				for (int hiddenNode = 0; hiddenNode < hiddenLayerSize; hiddenNode++){
 					errorOfHiddenNode[hiddenNode] = outputLayerWeights[hiddenNode] * errorOfOutputNode;
-					errorOfHiddenNode[hiddenNode] *= derivative(activationHidden[hiddenNode]); 
+//					errorOfHiddenNode[hiddenNode] *= derivative(activationHidden[hiddenNode]); 
 				}
 				
 				//adjusting weights
@@ -133,7 +144,8 @@ public class XOR {
 				for (int inputNode = 0; inputNode < 2; inputNode++){
 					inputToNeuron += hiddenLayerWeights[inputNode][hiddenNode] * activationInput[inputNode];
 				}
-				activationHidden[hiddenNode] = sigmoidActivationFunction(inputToNeuron);
+				//activationHidden[hiddenNode] = sigmoidActivationFunction(inputToNeuron);
+				activationHidden[hiddenNode] = stepActivationFunction(inputToNeuron);
 			}
 
 			// For the XOR network, we assume one output node.
@@ -141,7 +153,8 @@ public class XOR {
 			for (int hiddenNode = 0; hiddenNode < hiddenLayerSize; hiddenNode++){
 				inputAtOutput += outputLayerWeights[hiddenNode] * activationHidden[hiddenNode];
 			}
-			double activationOutput = sigmoidActivationFunction(inputAtOutput);
+			//double activationOutput = sigmoidActivationFunction(inputAtOutput);
+			double activationOutput = stepActivationFunction(inputAtOutput);
 
 			System.out.println("Example " + example + " has: " + activationOutput + " should be: " + trainingData[example][2]);	
 		}

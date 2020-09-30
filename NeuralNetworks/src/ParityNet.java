@@ -5,10 +5,10 @@ import java.util.concurrent.TimeUnit;
 
 public class ParityNet {
 	
-	private int inputLayerSize = 0;
-	private int hiddenLayerSize = 0;
-	private int numHiddenLayers = 0;
-	private int outputLayerSize = 0;
+	private int inputLayerSize = 7;
+	private int hiddenLayerSize = 7;
+	private int numHiddenLayers = 1;
+	private int outputLayerSize = 1;
 	private int maxLayerSize = 0;
 	private static double threshold = 0.01;
 	
@@ -67,7 +67,16 @@ public class ParityNet {
 		for (int l = 0; l < this.numHiddenLayers+1; l++) {
 			for (int i = 0; i < this.hiddenLayerSize; i++){
 				for (int j = 0; j < this.hiddenLayerSize; j++){
-					this.weights[l][i][j] = 0;
+					//this.weights[l][i][j] = 0;
+					// new
+					if(l < this.numHiddenLayers-1) {
+						this.weights[l][i][j] = 1;
+					} else if(i % 2 == 0) {
+						this.weights[l][i][j] = 1;
+					} else {
+						this.weights[l][i][j] = -1;
+					}
+					
 				}
 			}
 		}
