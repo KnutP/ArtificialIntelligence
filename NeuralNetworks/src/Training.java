@@ -28,9 +28,6 @@ public class Training {
 			for (int i = 0; i < numberOfLabels; i++) {
 				int outputNum = inLabel.read();
 				desiredOutput[i][outputNum] = 1;
-
-				if (i < 10) // verify labels imported
-					System.out.println(outputNum);
 			}
 
 			// IMAGES
@@ -49,18 +46,16 @@ public class Training {
 				for (int p = 0; p < numberOfPixels; p++) {
 					imgPixels[p] = inImage.read();
 				}
-
+				
 				inputs[i] = imgPixels;
-				if (i < 10)
-					System.out.println(imgPixels.toString());
 			}
 			
 			inImage.close();
 			inLabel.close();
 
-			FeedForwardNetwork n = new FeedForwardNetwork(numberOfPixels, numberOfPixels/8, 1, 10);
+			FeedForwardNetwork n = new FeedForwardNetwork(numberOfPixels, numberOfPixels/16, 1, 10);
 			
-			n.initNetwork(inputs, desiredOutput, 0.3, 0.1);
+			n.initNetwork(inputs, desiredOutput, 0.5, 0.01);
 			n.trainNetwork(10, true);
 			n.printWeights();
 			n.testNetwork();
@@ -77,9 +72,6 @@ public class Training {
 			for (int i = 0; i < numberOfLabels; i++) {
 				int outputNum = inLabel.read();
 				desiredOutput[i][outputNum] = 1;
-
-				if (i < 10) // verify labels imported
-					System.out.println(outputNum);
 			}
 
 			// IMAGES
@@ -100,8 +92,6 @@ public class Training {
 				}
 
 				inputs[i] = imgPixels;
-				if (i < 10)
-					System.out.println(imgPixels.toString());
 			}
 			
 			inImage.close();
