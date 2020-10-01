@@ -5,10 +5,10 @@ import java.util.concurrent.TimeUnit;
 
 public class ParityNet {
 	
-	private int inputLayerSize = 7;
-	private int hiddenLayerSize = 7;
-	private int numHiddenLayers = 5;
-	private int outputLayerSize = 1;
+	private int inputLayerSize = 0;
+	private int hiddenLayerSize = 0;
+	private int numHiddenLayers = 0;
+	private int outputLayerSize = 0;
 	private int maxLayerSize = 0;
 	private static double threshold = 0.01;
 	
@@ -96,7 +96,7 @@ public class ParityNet {
 		
 		// **** SECOND XOR GATES ****
 		l = 2;
-		for(int i =  0; i < this.hiddenLayerSize-3; i+=4) {
+		for(int i =  0; i < this.hiddenLayerSize-2; i+=4) {
 			this.weights[l][i][i] = 1;
 			this.weights[l][i][i+2] = -1;
 			this.weights[l][i+2][i] = -1;

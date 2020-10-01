@@ -47,7 +47,6 @@ public class FeedForwardNetwork {
 	private double[][][] weights; // [layer][from][to]
 
 	
-	@SuppressWarnings("hiding")
 	public void initNetwork(double[][] inputs, double[][] desiredOutput, double learningRate, double initialWeightOffset) {
 		this.trainingSetSize = inputs.length;
 		if (this.trainingSetSize == 0) {
@@ -96,6 +95,7 @@ public class FeedForwardNetwork {
 	}
 	
 	public void trainNetwork(int iterations, boolean verbose){
+		System.out.println("Begin training");
 		for (int k = 0; k < iterations; k++){
 			double globalError = 0.0;
 			//Run through entire training set once.
@@ -158,6 +158,7 @@ public class FeedForwardNetwork {
 				System.out.println("Global error: " + Math.sqrt(globalError/(this.trainingSetSize*this.outputLayerSize)));
 			}
 		}
+		System.out.println("Done training");
 	}
 	
 	private void calculateError(double[][] error, double[][] activation, int fromLayerSize, int toLayerSize, int l){
@@ -208,6 +209,7 @@ public class FeedForwardNetwork {
 }
 	
 	public void testNetwork(){
+		System.out.println("Begin testing on training set.");
 		int count = 0;
 		//Run through entire training set once.
 		for (int example = 0; example < this.trainingSetSize; example++){
@@ -231,13 +233,16 @@ public class FeedForwardNetwork {
 
 			for (int j = 0; j < this.outputLayerSize; j++){
 				if (Math.abs(activation[this.numHiddenLayers+1][j] - this.desiredOutput[example][j]) > 0.1) {
-					System.out.println("Output neuron " + j + " has: " + activation[this.numHiddenLayers+1][j] + " should be: " + this.desiredOutput[example][j]);
+					//System.out.println("Output neuron " + j + " has: " + activation[this.numHiddenLayers+1][j] + " should be: " + this.desiredOutput[example][j]);
 					count++;
 				}
 			}
 		}
-		System.out.println(count + " errors");
-		System.out.println("Done testing.");
+		System.out.println(count + " errors on training set");
+		System.out.println("Number correct: " + (trainingSetSize - count) + " out of: " + trainingSetSize);
+		System.out.println("Overall accuracy: " +   round((((double)(trainingSetSize-count)/trainingSetSize)), 4));
+
+		System.out.println("Done testing on training set.");
 	}
 	
 	/***
@@ -249,6 +254,7 @@ public class FeedForwardNetwork {
 	 * @param verbose - displays information regarding failures.
 	 */
 	public void testNetworkBatch(int testingSetSize, double[][] test_inputs, double[][] test_labels, boolean verbose) {
+		System.out.println("Begin testing on testing set.");
 		// Used for progress bar. Uncomment if progress bar is desired. 
 		// long startTime;
 		int error_count = 0;
@@ -297,9 +303,10 @@ public class FeedForwardNetwork {
 //			}
 		}
 		System.out.println(error_count + " errors");
-		System.out.println("Done testing.");
 		System.out.println("Number correct: " + (testingSetSize - error_count) + " out of: " + testingSetSize);
 		System.out.println("Overall accuracy: " +   round((((double)(testingSetSize-error_count)/testingSetSize)), 4));
+
+	System.out.println("Done testing on testing set.");
 	}
 	
 	public static double round(double value, int places) {

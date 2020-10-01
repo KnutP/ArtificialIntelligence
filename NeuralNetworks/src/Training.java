@@ -10,32 +10,27 @@ public class Training {
 
 	public static void main(String[] args) {
 
-		// double[][] inputs = {
-		// {0,0},
-		// {0,1},
-		// {1,0},
-		// {1,1}
-		// };
-		// double[][] desiredOutput = {{0},{1},{1},{0}};
-
 		FileInputStream inImage = null;
 		FileInputStream inLabel = null;
 
-		String inputImagePath = "t10k-images.idx3-ubyte";
-		String inputLabelPath = "t10k-labels.idx1-ubyte";
+		String inputImagePath = "train-images.idx3-ubyte";
+		String inputLabelPath = "train-labels.idx1-ubyte";
+		String inputTestImagePath = "t10k-images.idx3-ubyte";
+		String inputTestLabelPath = "t10k-labels.idx1-ubyte";
 
 		try {
 			// LABELS
 			inLabel = new FileInputStream(inputLabelPath);
 			int magicNumberLabels = (inLabel.read() << 24) | (inLabel.read() << 16) | (inLabel.read() << 8) | (inLabel.read());
 			int numberOfLabels = (inLabel.read() << 24) | (inLabel.read() << 16) | (inLabel.read() << 8) | (inLabel.read());
-			double[][] desiredOutput = new double[numberOfLabels][1];
+			double[][] desiredOutput = new double[numberOfLabels][10];
 
 			for (int i = 0; i < numberOfLabels; i++) {
-				desiredOutput[i][0] = inLabel.read();
+				int outputNum = inLabel.read();
+				desiredOutput[i][outputNum] = 1;
 
 				if (i < 10) // verify labels imported
-					System.out.println(desiredOutput[i][0]);
+					System.out.println(outputNum);
 			}
 
 			// IMAGES
@@ -59,13 +54,62 @@ public class Training {
 				if (i < 10)
 					System.out.println(imgPixels.toString());
 			}
-
-			FeedForwardNetwork n = new FeedForwardNetwork(numberOfPixels, 1, numberOfPixels/2, 10);
 			
-			n.initNetwork(inputs, desiredOutput, 0.3, 0);
-			n.trainNetwork(10000, false);
+			inImage.close();
+			inLabel.close();
+
+			FeedForwardNetwork n = new FeedForwardNetwork(numberOfPixels, numberOfPixels/8, 1, 10);
+			
+			n.initNetwork(inputs, desiredOutput, 0.3, 0.1);
+			n.trainNetwork(10, true);
 			n.printWeights();
 			n.testNetwork();
+			
+			
+			// *** TEST SET ***
+			
+			// LABELS
+			inLabel = new FileInputStream(inputTestLabelPath);
+			magicNumberLabels = (inLabel.read() << 24) | (inLabel.read() << 16) | (inLabel.read() << 8) | (inLabel.read());
+			numberOfLabels = (inLabel.read() << 24) | (inLabel.read() << 16) | (inLabel.read() << 8) | (inLabel.read());
+			desiredOutput = new double[numberOfLabels][10];
+
+			for (int i = 0; i < numberOfLabels; i++) {
+				int outputNum = inLabel.read();
+				desiredOutput[i][outputNum] = 1;
+
+				if (i < 10) // verify labels imported
+					System.out.println(outputNum);
+			}
+
+			// IMAGES
+			inImage = new FileInputStream(inputTestImagePath);
+			magicNumberImages = (inImage.read() << 24) | (inImage.read() << 16) | (inImage.read() << 8) | (inImage.read());
+			numberOfImages = (inImage.read() << 24) | (inImage.read() << 16) | (inImage.read() << 8) | (inImage.read());
+			numberOfRows = (inImage.read() << 24) | (inImage.read() << 16) | (inImage.read() << 8) | (inImage.read());
+			numberOfColumns = (inImage.read() << 24) | (inImage.read() << 16) | (inImage.read() << 8) | (inImage.read());
+
+			numberOfPixels = numberOfRows * numberOfColumns;
+			inputs = new double[numberOfImages][numberOfPixels];
+
+			for (int i = 0; i < numberOfImages; i++) {
+				double[] imgPixels = new double[numberOfPixels];
+
+				for (int p = 0; p < numberOfPixels; p++) {
+					imgPixels[p] = inImage.read();
+				}
+
+				inputs[i] = imgPixels;
+				if (i < 10)
+					System.out.println(imgPixels.toString());
+			}
+			
+			inImage.close();
+			inLabel.close();
+			
+			n.testNetworkBatch(numberOfImages, inputs, desiredOutput, true);
+
+			
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
