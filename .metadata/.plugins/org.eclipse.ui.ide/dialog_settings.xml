@@ -5,6 +5,8 @@
 		<item value="false" key="WizardProjectsImportPage.STORE_COPY_PROJECT_ID"/>
 		<item value="false" key="WizardProjectsImportPage.STORE_ARCHIVE_SELECTED"/>
 		<list key="WizardProjectsImportPage.STORE_DIRECTORIES">
+			<item value="C:\EclipseWorkspaces\csse413\HRCProject"/>
+			<item value="C:\EclipseWorkspaces\csse413\NeuralNetworks"/>
 			<item value="C:\EclipseWorkspaces\csse413\Search"/>
 		</list>
 		<list key="WizardProjectsImportPage.STORE_ARCHIVES">

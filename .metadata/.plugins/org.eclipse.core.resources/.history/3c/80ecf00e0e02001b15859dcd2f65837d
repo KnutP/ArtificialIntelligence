@@ -1,0 +1,102 @@
+
+public class Perceptron {
+
+	private static int[][] trainingData = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 }, { 1, 1, 1 } };
+
+	private static int trainingSetSize = 0;
+	private static int networkSize = 0;
+	private static double threshold = 0.5; // experiment
+	private static double[] weights;
+	private static double learningRate = 0.14; // experiment
+
+	private static void initNetwork() {
+		trainingSetSize = trainingData.length;
+		if (trainingSetSize == 0) {
+			System.out.println("No training data.");
+			return;
+		}
+		networkSize = trainingData[0].length - 1;
+		if (networkSize == 0) {
+			System.out.println("Training data does not contain desired output.");
+			return;
+		}
+		if (networkSize == -1) {
+			System.out.println("The network is empty.");
+			return;
+		}
+		weights = new double[networkSize];
+		for (int i = 0; i < networkSize; i++) {
+			weights[i] = 0; // experiment with small (and large) weights
+		}
+	}
+
+	private static double stepActivationFunction(double input) {
+		if (input >= threshold)
+			return 1;
+		return 0;
+	}
+
+	private static void trainNetwork() {
+		int[] data;
+		int desiredOutput;
+		double input;
+		double output;
+		double error;
+
+		for (int i = 0; i < 1; i++) {
+			for (int j = 0; j < trainingSetSize; j++) {
+				data = trainingData[j];
+				desiredOutput = data[networkSize];
+
+				input = calculateInput(data);
+				output = stepActivationFunction(input);
+
+				error = (double) desiredOutput - output;
+
+				for (int d = 0; d < data.length - 1; d++) {
+					for (int k = 0; k < weights.length; k++) {
+						weights[k] = weights[k] + learningRate * error * data[d];
+					}
+				}
+
+			}
+		}
+		
+	}
+
+	private static double calculateInput(int[] data) {
+		double sum = 0;
+		for (int i = 0; i < networkSize; i++) {
+			sum += data[i] * weights[i];
+		}
+
+		return sum;
+	}
+
+	private static void printWeights() {
+		for (int i = 0; i < networkSize; i++) {
+			System.out.printf("Weight %d is %f.\n", i, weights[i]);
+		}
+	}
+
+	private static void testNetwork() {
+		for (int i = 0; i < trainingSetSize; i++) {
+			double inputToNeuron = 0;
+			for (int j = 0; j < networkSize; j++) {
+				inputToNeuron += weights[j] * trainingData[i][j];
+			}
+			double activationOfNeuron = stepActivationFunction(inputToNeuron);
+			if (activationOfNeuron != trainingData[i][networkSize])
+				System.out.println("Network did not learn training set " + i);
+		}
+		System.out.println("Done testing.");
+	}
+
+	public static void main(String[] args) {
+		initNetwork();
+		trainNetwork();
+		printWeights();
+		testNetwork();
+	}
+
+}

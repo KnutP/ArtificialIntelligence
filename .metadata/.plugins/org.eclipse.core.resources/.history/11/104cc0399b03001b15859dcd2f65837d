@@ -1,0 +1,126 @@
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+public class Training {
+
+	// Referenced this page for file IO and processing files:
+	// https://stackoverflow.com/questions/17279049/reading-a-idx-file-type-in-java
+
+	public static void main(String[] args) {
+
+		FileInputStream inImage = null;
+		FileInputStream inLabel = null;
+
+		String inputImagePath = "train-images.idx3-ubyte";
+		String inputLabelPath = "train-labels.idx1-ubyte";
+		String inputTestImagePath = "t10k-images.idx3-ubyte";
+		String inputTestLabelPath = "t10k-labels.idx1-ubyte";
+
+		try {
+			// LABELS
+			inLabel = new FileInputStream(inputLabelPath);
+			int magicNumberLabels = (inLabel.read() << 24) | (inLabel.read() << 16) | (inLabel.read() << 8) | (inLabel.read());
+			int numberOfLabels = (inLabel.read() << 24) | (inLabel.read() << 16) | (inLabel.read() << 8) | (inLabel.read());
+			double[][] desiredOutput = new double[numberOfLabels][10];
+
+			for (int i = 0; i < numberOfLabels; i++) {
+				int outputNum = inLabel.read();
+				desiredOutput[i][outputNum] = 1;
+			}
+
+			// IMAGES
+			inImage = new FileInputStream(inputImagePath);
+			int magicNumberImages = (inImage.read() << 24) | (inImage.read() << 16) | (inImage.read() << 8) | (inImage.read());
+			int numberOfImages = (inImage.read() << 24) | (inImage.read() << 16) | (inImage.read() << 8) | (inImage.read());
+			int numberOfRows = (inImage.read() << 24) | (inImage.read() << 16) | (inImage.read() << 8) | (inImage.read());
+			int numberOfColumns = (inImage.read() << 24) | (inImage.read() << 16) | (inImage.read() << 8) | (inImage.read());
+
+			int numberOfPixels = numberOfRows * numberOfColumns;
+			double[][] inputs = new double[numberOfImages][numberOfPixels];
+
+			for (int i = 0; i < numberOfImages; i++) {
+				double[] imgPixels = new double[numberOfPixels];
+
+				for (int p = 0; p < numberOfPixels; p++) {
+					imgPixels[p] = inImage.read();
+				}
+				
+				inputs[i] = imgPixels;
+			}
+			
+			inImage.close();
+			inLabel.close();
+
+			FeedForwardNetwork n = new FeedForwardNetwork(numberOfPixels, numberOfPixels/16, 1, 10);
+			
+			n.initNetwork(inputs, desiredOutput, 0.05, 0.01);
+			n.trainNetwork(10, true);
+			n.printWeights();
+			n.testNetwork();
+			
+			
+			// *** TEST SET ***
+			
+			// LABELS
+			inLabel = new FileInputStream(inputTestLabelPath);
+			magicNumberLabels = (inLabel.read() << 24) | (inLabel.read() << 16) | (inLabel.read() << 8) | (inLabel.read());
+			numberOfLabels = (inLabel.read() << 24) | (inLabel.read() << 16) | (inLabel.read() << 8) | (inLabel.read());
+			desiredOutput = new double[numberOfLabels][10];
+
+			for (int i = 0; i < numberOfLabels; i++) {
+				int outputNum = inLabel.read();
+				desiredOutput[i][outputNum] = 1;
+			}
+
+			// IMAGES
+			inImage = new FileInputStream(inputTestImagePath);
+			magicNumberImages = (inImage.read() << 24) | (inImage.read() << 16) | (inImage.read() << 8) | (inImage.read());
+			numberOfImages = (inImage.read() << 24) | (inImage.read() << 16) | (inImage.read() << 8) | (inImage.read());
+			numberOfRows = (inImage.read() << 24) | (inImage.read() << 16) | (inImage.read() << 8) | (inImage.read());
+			numberOfColumns = (inImage.read() << 24) | (inImage.read() << 16) | (inImage.read() << 8) | (inImage.read());
+
+			numberOfPixels = numberOfRows * numberOfColumns;
+			inputs = new double[numberOfImages][numberOfPixels];
+
+			for (int i = 0; i < numberOfImages; i++) {
+				double[] imgPixels = new double[numberOfPixels];
+
+				for (int p = 0; p < numberOfPixels; p++) {
+					imgPixels[p] = inImage.read();
+				}
+
+				inputs[i] = imgPixels;
+			}
+			
+			inImage.close();
+			inLabel.close();
+			
+			n.testNetworkBatch(numberOfImages, inputs, desiredOutput, true);
+
+			
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (inImage != null) {
+				try {
+					inImage.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			if (inLabel != null) {
+				try {
+					inLabel.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+}
