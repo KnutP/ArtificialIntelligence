@@ -70,8 +70,8 @@ public class Robot {
 	    if (sentences != null && ! sentences.isEmpty()) {
 	      CoreMap sentence = sentences.get(0);
 	      SemanticGraph graph = sentence.get(SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation.class);
-	      //TODO: remove prettyPrint() and use the SemanticGraph to determine the action to be executed by the robot.
-	      graph.prettyPrint();
+	      //DONE: remove prettyPrint() and use the SemanticGraph to determine the action to be executed by the robot.
+	      //graph.prettyPrint();
 	      
 	      
 	   // get root of parse graph
@@ -84,16 +84,6 @@ public class Robot {
 	          case "NN": return processNounPhrase(graph, root);
 	          default: return processOtherPhrase(graph, root);
           	}
-	      
-	      // Find verbs
-	      
-	      // if close to "left", go left
-	      // same for right, up, down
-	      
-	      // if close to "clean", then clean tile
-	      
-	      
-	      
 	      
 	    }
 	    
@@ -112,9 +102,8 @@ public class Robot {
     	List<Pair<GrammaticalRelation,IndexedWord>> s = dependencies.childPairs(root);
     	System.out.println(s.toString());
     	
-    	for(Pair p : s) {
-    		GrammaticalRelation r = (GrammaticalRelation) p.first;
-    		IndexedWord w = (IndexedWord) p.second;
+    	for(Pair<GrammaticalRelation,IndexedWord> p : s) {
+    		IndexedWord w = p.second;
 
 	    	if(w.originalText().equalsIgnoreCase("left")) {
 	    		System.out.println("moving left");
@@ -142,8 +131,6 @@ public class Robot {
     		return Action.CLEAN;
     	}
     	
-    	// TODO: Check similar words
-    	
     	return Action.DO_NOTHING;
     }
     
@@ -158,9 +145,8 @@ public class Robot {
     	List<Pair<GrammaticalRelation,IndexedWord>> s = dependencies.childPairs(root);
     	System.out.println(s.toString());
     	
-    	for(Pair p : s) {
-    		GrammaticalRelation r = (GrammaticalRelation) p.first;
-    		IndexedWord w = (IndexedWord) p.second;
+    	for(Pair<GrammaticalRelation,IndexedWord> p : s) {
+    		IndexedWord w = p.second;
 
 	    	if(w.originalText().equalsIgnoreCase("left")) {
 	    		System.out.println("moving left");
