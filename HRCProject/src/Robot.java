@@ -23,6 +23,34 @@ public class Robot {
 	private Environment env;
 	private int posRow;
 	private int posCol;
+	private Action lastAction;
+	private String name;
+	private String[] acknowlegements = {
+			"Got it.",
+			"Will do.",
+			"Yep.",
+			"Understood.",
+			"Roger that."
+	};
+	private String[] actionPrepends = {
+			"I think you want me to ",
+			"I am going to ",
+			"",
+			"",
+			""
+	};
+	private String[] clarification = {
+			"Sorry, what do you want me to do?",
+			"I didn't quite get that. Please try again.",
+			"What was that?",
+			"Unable to parse input.",
+			"I'm confused. What do you want me to do?",
+			"I don't understand. Please try again.",
+			"Bruh, what?",
+			"",
+			"",
+			""
+	};
 
 	private Properties props;
 	private StanfordCoreNLP pipeline;
@@ -38,6 +66,8 @@ public class Robot {
 		this.env = env;
 		this.posRow = posRow;
 		this.posCol = posCol;
+		this.lastAction = Action.DO_NOTHING;
+		this.name = null;
 		
 	    props = new Properties();
 	    props.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner, parse");
@@ -87,15 +117,21 @@ public class Robot {
 	      
 	    }
 	    
+	    this.lastAction = Action.DO_NOTHING;
 	    return Action.DO_NOTHING;
 	}
     
 	
-    public static Action processVerbPhrase(SemanticGraph dependencies, IndexedWord root){
+	private Action getActionFromWord(String word) {
+		return Action.DO_NOTHING;
+	}
+	
+    public Action processVerbPhrase(SemanticGraph dependencies, IndexedWord root){
         System.out.println("Action: " + root.toString());
         
     	if(root.originalText().equalsIgnoreCase("clean")) {
     		System.out.println("cleaning (Verb Phrase)");
+    		this.lastAction = Action.CLEAN;
     		return Action.CLEAN;
     	}
     	
@@ -107,34 +143,49 @@ public class Robot {
 
 	    	if(w.originalText().equalsIgnoreCase("left")) {
 	    		System.out.println("moving left");
+	    		this.lastAction = Action.MOVE_LEFT;
 	    		return Action.MOVE_LEFT;
 	    	} else if(w.originalText().equalsIgnoreCase("right")) {
 	    		System.out.println("moving right");
+	    		this.lastAction = Action.MOVE_RIGHT;
 	    		return Action.MOVE_RIGHT;
 	    	} else if(w.originalText().equalsIgnoreCase("up")) {
 	    		System.out.println("moving up");
+	    		this.lastAction = Action.MOVE_UP;
 	    		return Action.MOVE_UP;
 	    	} else if(w.originalText().equalsIgnoreCase("down")) {
 	    		System.out.println("moving down");
+	    		this.lastAction = Action.MOVE_DOWN;
 	    		return Action.MOVE_DOWN;
+	    	} else if(w.originalText().equalsIgnoreCase("again")) {
+	    		System.out.println("repeating the last action");
+	    		return this.lastAction;
+	    	} else if(w.originalText().equalsIgnoreCase("more")) {
+	    		System.out.println("repeating the last action");
+	    		return this.lastAction;
+	    	} else if(w.originalText().equalsIgnoreCase("further")) {
+	    		System.out.println("repeating the last action");
+	    		return this.lastAction;
 	    	}
 
     	}
     	
     	System.out.println("doing nothing (Verb Phrase)");
+    	this.lastAction = Action.DO_NOTHING;
         return Action.DO_NOTHING;
     }
     
-    public static Action processAdjectivePhrase(SemanticGraph dependencies, IndexedWord root) {
+    public Action processAdjectivePhrase(SemanticGraph dependencies, IndexedWord root) {
     	if(root.originalText().equalsIgnoreCase("clean")) {
     		System.out.println("cleaning (Adjective phrase)");
+    		this.lastAction = Action.CLEAN;
     		return Action.CLEAN;
     	}
     	
     	return Action.DO_NOTHING;
     }
     
-    public static Action processNounPhrase(SemanticGraph dependencies, IndexedWord root){
+    public Action processNounPhrase(SemanticGraph dependencies, IndexedWord root){
         System.out.println("Action: " + root.toString());
         
     	if(root.originalText().equalsIgnoreCase("clean")) {
@@ -150,21 +201,26 @@ public class Robot {
 
 	    	if(w.originalText().equalsIgnoreCase("left")) {
 	    		System.out.println("moving left");
+	    		this.lastAction = Action.MOVE_LEFT;
 	    		return Action.MOVE_LEFT;
 	    	} else if(w.originalText().equalsIgnoreCase("right")) {
 	    		System.out.println("moving right");
+	    		this.lastAction = Action.MOVE_RIGHT;
 	    		return Action.MOVE_RIGHT;
 	    	} else if(w.originalText().equalsIgnoreCase("up")) {
 	    		System.out.println("moving up");
+	    		this.lastAction = Action.MOVE_UP;
 	    		return Action.MOVE_UP;
 	    	} else if(w.originalText().equalsIgnoreCase("down")) {
 	    		System.out.println("moving down");
+	    		this.lastAction = Action.MOVE_DOWN;
 	    		return Action.MOVE_DOWN;
 	    	}
 
     	}
     	
     	System.out.println("doing nothing (Noun Phrase)");
+		this.lastAction = Action.DO_NOTHING;
         return Action.DO_NOTHING;
     }
     
