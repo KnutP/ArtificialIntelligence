@@ -39,6 +39,10 @@ public class Robot {
 			"I didn't quite get that. Please try again.", "What was that?", "Unable to parse input.",
 			"I'm confused. What do you want me to do?", "I don't understand. Please try again.", "Bruh, what?",
 			"I don't know what to do.", "Please clarify.", "I'm not sure what you mean." };
+	private String[] praisePhrase = {
+			"good job",
+			"well done",
+			"good boy" };
 
 	private Properties props;
 	private StanfordCoreNLP pipeline;
@@ -54,7 +58,7 @@ public class Robot {
 		this.posRow = posRow;
 		this.posCol = posCol;
 		this.lastAction = Action.DO_NOTHING;
-		this.robotName = null;
+		this.robotName = "Steve";
 
 		props = new Properties();
 		props.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner, parse");
@@ -160,6 +164,29 @@ public class Robot {
 		return Action.DO_NOTHING;
 	}
 
+	private boolean isThereNegation(SemanticGraph dependencies, IndexedWord root) {
+		String word = root.originalText();
+		
+		if (word.equalsIgnoreCase("no") || word.equalsIgnoreCase("n't") || word.equalsIgnoreCase("not")) {
+			return true;
+		}
+		
+		List<Pair<GrammaticalRelation, IndexedWord>> s = dependencies.childPairs(root);
+		System.out.println(s.toString()); // TODO: remove
+		
+		for (Pair<GrammaticalRelation, IndexedWord> p : s) { // first pass to check for negation
+			GrammaticalRelation r = p.first;
+			IndexedWord w = p.second;
+			word = w.originalText();
+
+			if (word.equalsIgnoreCase("no") || word.equalsIgnoreCase("n't") || word.equalsIgnoreCase("not")) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	private static String getRandom(String[] array) {
 		int rnd = new Random().nextInt(array.length);
 		return array[rnd];
@@ -212,6 +239,12 @@ public class Robot {
 
 	public Action processVerbPhrase(SemanticGraph dependencies, IndexedWord root) {
 		System.out.println("Action: " + root.toString());
+		
+		if(isThereNegation(dependencies, root)) {
+			System.out.println("Doing nothing");
+			this.lastAction = Action.DO_NOTHING;
+			return Action.DO_NOTHING;
+		}
 
 		if (root.originalText().equalsIgnoreCase("clean")) {
 			System.out.println("cleaning (Verb Phrase)");
@@ -220,7 +253,7 @@ public class Robot {
 		}
 
 		List<Pair<GrammaticalRelation, IndexedWord>> s = dependencies.childPairs(root);
-		System.out.println(s.toString());
+		System.out.println(s.toString()); // TODO: Remove
 
 		for (Pair<GrammaticalRelation, IndexedWord> p : s) {
 			IndexedWord w = p.second;
@@ -275,7 +308,13 @@ public class Robot {
 	}
 
 	public Action processOtherPhrase(SemanticGraph dependencies, IndexedWord root) {
-		System.out.println("Action: " + root.toString());
+		System.out.println("Action: " + root.toString() +" " + root.tag());
+		
+		if(isThereNegation(dependencies, root)) {
+			System.out.println("Doing nothing");
+			this.lastAction = Action.DO_NOTHING;
+			return Action.DO_NOTHING;
+		}
 		
 		return keywordSearch(dependencies, root);
 	}
