@@ -46,6 +46,11 @@ public class Robot {
 			"Radical, dude",
 			"I gotchu fam"
 	};
+	private String[] jokes =  {
+		"Why didn't the surfer ride the glassy waves? Because he heard they were breaking!",
+		"What did the wave say to the surfer? Have a swell time!",
+		"Why do surfers eat cold food? Because they hate microwaves."		
+	};
 
 	private Properties props;
 	private StanfordCoreNLP pipeline;
@@ -143,6 +148,12 @@ public class Robot {
 		
 		if(isThereNegation(dependencies, root)) {
 			System.out.println("Doing nothing");
+			this.lastAction = Action.DO_NOTHING;
+			return Action.DO_NOTHING;
+		}
+		
+		if(isAskingForJoke(dependencies, root)) {
+			System.out.println(getRandom(this.jokes));
 			this.lastAction = Action.DO_NOTHING;
 			return Action.DO_NOTHING;
 		}
@@ -372,6 +383,29 @@ public class Robot {
 		return false;
 	}
 
+	private boolean isAskingForJoke(SemanticGraph dependencies, IndexedWord root) {
+		String word = root.originalText();
+		
+		if (word.equalsIgnoreCase("joke") || word.equalsIgnoreCase("funny")) {
+			return true;
+		}
+		
+		List<Pair<GrammaticalRelation, IndexedWord>> s = dependencies.childPairs(root);
+		System.out.println(s.toString()); // TODO: remove
+		
+		for (Pair<GrammaticalRelation, IndexedWord> p : s) {
+			IndexedWord w = p.second;
+			word = w.originalText();
+
+			if (word.equalsIgnoreCase("joke") || word.equalsIgnoreCase("funny")) {
+				return true;
+			}
+		}
+		
+		return false;
+		
+	}
+	
 	private String getGreetingForTime() {
         Date dt = new Date();
         int hours = dt.getHours();
