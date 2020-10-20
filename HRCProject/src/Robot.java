@@ -51,6 +51,11 @@ public class Robot {
 		"What did the wave say to the surfer? Have a swell time!",
 		"Why do surfers eat cold food? Because they hate microwaves."		
 	};
+	private String[] weekendPlans =  {
+			"Dude, I finna go surfing",
+			"I'm gonna hit the beach",
+			"Just vibin', yah know?"		
+		};
 
 	private Properties props;
 	private StanfordCoreNLP pipeline;
@@ -258,6 +263,12 @@ public class Robot {
 			return Action.DO_NOTHING;
 		}
 		
+		if(isAskingAboutWeekend(dependencies, root)) {
+			System.out.println(getRandom(this.weekendPlans));
+			this.lastAction = Action.DO_NOTHING;
+			return Action.DO_NOTHING;
+		}
+		
 		return keywordSearch(dependencies, root);
 	}
 
@@ -403,7 +414,28 @@ public class Robot {
 		}
 		
 		return false;
+	}
+	
+	private boolean isAskingAboutWeekend(SemanticGraph dependencies, IndexedWord root) {
+		String word = root.originalText();
 		
+		if (word.equalsIgnoreCase("weekend") || word.equalsIgnoreCase("plans")) {
+			return true;
+		}
+		
+		List<Pair<GrammaticalRelation, IndexedWord>> s = dependencies.childPairs(root);
+		System.out.println(s.toString()); // TODO: remove
+		
+		for (Pair<GrammaticalRelation, IndexedWord> p : s) {
+			IndexedWord w = p.second;
+			word = w.originalText();
+
+			if (word.equalsIgnoreCase("weekend") || word.equalsIgnoreCase("plans")) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	private String getGreetingForTime() {
@@ -413,13 +445,13 @@ public class Robot {
         String greeting = "";
 
         if(hours>=1 && hours<=12){
-            greeting = "Good Morning";
+            greeting = "Mornin' dude";
         }else if(hours>=12 && hours<=16){
-        	greeting = "Good Afternoon";
+        	greeting = "Afternoon bro";
         }else if(hours>=16 && hours<=21){
-        	greeting = "Good Evening";
+        	greeting = "Good evening";
         }else if(hours>=21 && hours<=24){
-        	greeting = "Good Night";
+        	greeting = "Good night";
         }
         
         return greeting;
