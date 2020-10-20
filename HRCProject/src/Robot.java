@@ -44,6 +44,12 @@ public class Robot {
 			"good job",
 			"well done",
 			"good boy" };
+	private String[] praiseResponsePhrase = {
+			"No problem bro",
+			"It's chill",
+			"Radical, dude",
+			"I gotchu fam"
+	};
 
 	private Properties props;
 	private StanfordCoreNLP pipeline;
@@ -227,6 +233,12 @@ public class Robot {
 			return Action.DO_NOTHING;
 		}
 		
+		if(isAskingForName(dependencies, root)) {
+			System.out.println("My name is " + this.robotName);
+			this.lastAction = Action.DO_NOTHING;
+			return Action.DO_NOTHING;
+		}
+		
 		return keywordSearch(dependencies, root);
 	}
 
@@ -308,6 +320,25 @@ public class Robot {
 			}
 		}
 		
+		return false;
+	}
+	
+	private boolean isAskingForName(SemanticGraph dependencies, IndexedWord root) {
+		String word = root.originalText();
+		
+		if (root.tag().equals("WP")) {
+			List<Pair<GrammaticalRelation, IndexedWord>> s = dependencies.childPairs(root);
+			System.out.println(s.toString()); // TODO: remove
+			
+			for (Pair<GrammaticalRelation, IndexedWord> p : s) {
+				IndexedWord w = p.second;
+				word = w.originalText();
+
+				if (word.equalsIgnoreCase("name") || word.equalsIgnoreCase("you")) {
+					return true;
+				}
+			}
+		}
 		return false;
 	}
 
