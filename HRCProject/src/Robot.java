@@ -28,22 +28,18 @@ public class Robot {
 	private int posCol;
 	private Action lastAction;
 	private String robotName;
-	private String[] acknowlegement = { "Got it. ", "Will do. ", "Yep. ", "Understood. ", "Roger that. " };
+	private String[] acknowlegement = { "Gotcha. ", "Uh huh. ", "Yeah bro. ", "Yep. ", "Cool. " };
 	private String[] actionPrepends = { 
 			"I think you want me to ", 
 			"I am going to ", 
 			"Orders are to ", 
 			"Cool, I'll ", 
-			"Sounds good. I'll " };
+			"Sure dude. I'll " };
 	private String[] clarification = { 
-			"Sorry, what do you want me to do?",
+			"Sorry dude, what do you want me to do?",
 			"I didn't quite get that. Please try again.", "What was that?", "Unable to parse input.",
-			"I'm confused. What do you want me to do?", "I don't understand. Please try again.", "Bruh, what?",
-			"I don't know what to do.", "Please clarify.", "I'm not sure what you mean." };
-	private String[] praisePhrase = {
-			"good job",
-			"well done",
-			"good boy" };
+			"I'm confused. What do you want me to do?", "I don't understand. Try somethin' else.", "Bruh, what?",
+			"I dunno know what to do bro.", "Can you make it more clear?", "Waddya mean bro?" };
 	private String[] praiseResponsePhrase = {
 			"No problem bro",
 			"It's chill",
@@ -192,6 +188,12 @@ public class Robot {
 			return Action.DO_NOTHING;
 		}
 		
+		if(isPraising(dependencies, root)) {
+			System.out.println(getRandom(this.praiseResponsePhrase));
+			this.lastAction = Action.DO_NOTHING;
+			return Action.DO_NOTHING;
+		}
+		
 		if (root.originalText().equalsIgnoreCase("clean")) {
 			System.out.print(getRandom(this.acknowlegement));
 			System.out.println("Cleaning.");
@@ -235,6 +237,12 @@ public class Robot {
 		
 		if(isAskingForName(dependencies, root)) {
 			System.out.println("My name is " + this.robotName);
+			this.lastAction = Action.DO_NOTHING;
+			return Action.DO_NOTHING;
+		}
+		
+		if(isPraising(dependencies, root)) {
+			System.out.println(getRandom(this.praiseResponsePhrase));
 			this.lastAction = Action.DO_NOTHING;
 			return Action.DO_NOTHING;
 		}
@@ -339,6 +347,28 @@ public class Robot {
 				}
 			}
 		}
+		return false;
+	}
+	
+	private boolean isPraising(SemanticGraph dependencies, IndexedWord root) {
+		String word = root.originalText();
+		
+		if (word.equalsIgnoreCase("good") || word.equalsIgnoreCase("nice") || word.equalsIgnoreCase("well")) {
+			return true;
+		}
+		
+		List<Pair<GrammaticalRelation, IndexedWord>> s = dependencies.childPairs(root);
+		System.out.println(s.toString()); // TODO: remove
+		
+		for (Pair<GrammaticalRelation, IndexedWord> p : s) {
+			IndexedWord w = p.second;
+			word = w.originalText();
+
+			if (word.equalsIgnoreCase("good") || word.equalsIgnoreCase("nice") || word.equalsIgnoreCase("well")) {
+				return true;
+			}
+		}
+		
 		return false;
 	}
 
