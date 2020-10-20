@@ -149,7 +149,7 @@ public class Robot {
 	// **** Phrase Processing ****
 
 	public Action processVerbPhrase(SemanticGraph dependencies, IndexedWord root) {
-		System.out.println("Action: " + root.toString());
+		//System.out.println("Action: " + root.toString());
 		
 		if(isThereNegation(dependencies, root)) {
 			System.out.println("Doing nothing");
@@ -164,20 +164,22 @@ public class Robot {
 		}
 
 		if (root.originalText().equalsIgnoreCase("clean")) {
-			System.out.println("cleaning (Verb Phrase)");
+			System.out.print(getRandom(this.acknowlegement));
+			System.out.print(getRandom(this.actionPrepends));
+			System.out.println("clean the tile.");
 			this.lastAction = Action.CLEAN;
 			return Action.CLEAN;
 		}
 
 		List<Pair<GrammaticalRelation, IndexedWord>> s = dependencies.childPairs(root);
-		System.out.println(s.toString()); // TODO: Remove
+		//System.out.println(s.toString());
 
 		for (Pair<GrammaticalRelation, IndexedWord> p : s) {
 			IndexedWord w = p.second;
 			return getActionFromWord(w.originalText());
 		}
 
-		System.out.println("doing nothing (Verb Phrase)");
+		System.out.println(getRandom(this.clarification));
 		this.lastAction = Action.DO_NOTHING;
 		return Action.DO_NOTHING;
 	}
@@ -185,7 +187,8 @@ public class Robot {
 	public Action processAdjectivePhrase(SemanticGraph dependencies, IndexedWord root) {
 		if (root.originalText().equalsIgnoreCase("clean")) {
 			System.out.print(getRandom(this.acknowlegement));
-			System.out.println("Cleaning.");
+			System.out.print(getRandom(this.actionPrepends));
+			System.out.println("clean the tile.");
 			this.lastAction = Action.CLEAN;
 			return Action.CLEAN;
 		}
@@ -196,7 +199,7 @@ public class Robot {
 	}
 
 	public Action processNounPhrase(SemanticGraph dependencies, IndexedWord root) {
-		System.out.println("Action: " + root.toString());
+		//System.out.println("Action: " + root.toString());
 		
 		if(isThereGreeting(dependencies, root)) {
 			System.out.println(getGreetingForTime());
@@ -212,7 +215,8 @@ public class Robot {
 		
 		if (root.originalText().equalsIgnoreCase("clean")) {
 			System.out.print(getRandom(this.acknowlegement));
-			System.out.println("Cleaning.");
+			System.out.print(getRandom(this.actionPrepends));
+			System.out.println("clean the tile.");
 			this.lastAction = Action.CLEAN;
 			return Action.CLEAN;
 		} else if (root.originalText().equalsIgnoreCase("repeat")) {
@@ -222,7 +226,7 @@ public class Robot {
 		}
 
 		List<Pair<GrammaticalRelation, IndexedWord>> s = dependencies.childPairs(root);
-		System.out.println(s.toString());
+		//System.out.println(s.toString());
 
 		for (Pair<GrammaticalRelation, IndexedWord> p : s) {
 			IndexedWord w = p.second;
@@ -237,7 +241,7 @@ public class Robot {
 	}
 
 	public Action processOtherPhrase(SemanticGraph dependencies, IndexedWord root) {
-		System.out.println("Action: " + root.toString() +" " + root.tag());
+		//System.out.println("Action: " + root.toString() +" " + root.tag());
 		
 		if(isThereNegation(dependencies, root)) {
 			System.out.println("Doing nothing");
@@ -313,7 +317,6 @@ public class Robot {
 		}
 		
 		List<Pair<GrammaticalRelation, IndexedWord>> s = dependencies.childPairs(root);
-		System.out.println(s.toString()); // TODO: remove
 		
 		for (Pair<GrammaticalRelation, IndexedWord> p : s) { // first pass to check for negation
 			GrammaticalRelation r = p.first;
@@ -337,7 +340,6 @@ public class Robot {
 		}
 		
 		List<Pair<GrammaticalRelation, IndexedWord>> s = dependencies.childPairs(root);
-		System.out.println(s.toString()); // TODO: remove
 		
 		for (Pair<GrammaticalRelation, IndexedWord> p : s) { // first pass to check for negation
 			GrammaticalRelation r = p.first;
@@ -358,7 +360,6 @@ public class Robot {
 		
 		if (root.tag().equals("WP")) {
 			List<Pair<GrammaticalRelation, IndexedWord>> s = dependencies.childPairs(root);
-			System.out.println(s.toString()); // TODO: remove
 			
 			for (Pair<GrammaticalRelation, IndexedWord> p : s) {
 				IndexedWord w = p.second;
@@ -380,7 +381,6 @@ public class Robot {
 		}
 		
 		List<Pair<GrammaticalRelation, IndexedWord>> s = dependencies.childPairs(root);
-		System.out.println(s.toString()); // TODO: remove
 		
 		for (Pair<GrammaticalRelation, IndexedWord> p : s) {
 			IndexedWord w = p.second;
@@ -402,7 +402,6 @@ public class Robot {
 		}
 		
 		List<Pair<GrammaticalRelation, IndexedWord>> s = dependencies.childPairs(root);
-		System.out.println(s.toString()); // TODO: remove
 		
 		for (Pair<GrammaticalRelation, IndexedWord> p : s) {
 			IndexedWord w = p.second;
@@ -424,7 +423,6 @@ public class Robot {
 		}
 		
 		List<Pair<GrammaticalRelation, IndexedWord>> s = dependencies.childPairs(root);
-		System.out.println(s.toString()); // TODO: remove
 		
 		for (Pair<GrammaticalRelation, IndexedWord> p : s) {
 			IndexedWord w = p.second;
