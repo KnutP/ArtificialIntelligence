@@ -1,5 +1,10 @@
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Scanner;
@@ -56,6 +61,11 @@ public class Robot {
 			"I'm gonna hit the beach",
 			"Just vibin', yah know?"		
 		};
+	
+	private boolean isRecording;
+	private boolean isExecuting;
+	private HashMap<String, LinkedList<Action>> paths;
+	private LinkedList<Action> currentPath;
 
 	private Properties props;
 	private StanfordCoreNLP pipeline;
@@ -72,6 +82,10 @@ public class Robot {
 		this.posCol = posCol;
 		this.lastAction = Action.DO_NOTHING;
 		this.robotName = "Steve";
+		
+		this.isRecording = false;
+		this.isExecuting = false;
+		this.paths = new HashMap<>();
 
 		props = new Properties();
 		props.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner, parse");
@@ -109,6 +123,14 @@ public class Robot {
 	 * functions.
 	 */
 	public Action getAction() {
+		
+		if(isExecuting) {
+			// return next step in path
+			
+		}
+		
+		
+		
 		Annotation annotation;
 		System.out.print("> ");
 		sc = new Scanner(System.in);
@@ -127,6 +149,28 @@ public class Robot {
 
 			// get root of parse graph
 			IndexedWord root = graph.getFirstRoot();
+			
+			this.checkForStartRecording(name);
+			
+			if(this.isRecording) {
+				// check for end record tag
+				this.checkForEndRecording(name);
+				
+				// check for coordinates
+				this.checkForCoordinates(graph, root);
+				
+				// name plan
+				
+				
+				return Action.DO_NOTHING;
+			}
+			
+			
+			
+			
+			
+			
+			
 			// type of root
 			String type = root.tag();
 			switch (type) {
@@ -503,6 +547,168 @@ public class Robot {
 		System.out.println(getRandom(this.clarification));
 		this.lastAction = Action.DO_NOTHING;
 		return Action.DO_NOTHING;
+	}
+	
+	private void checkForStartRecording(String input) {
+		if(input.contains("begin record")) {
+			this.isRecording = true;
+		}
+	}
+	
+	private void checkForEndRecording(String input) {
+		if(input.contains("end record")) {
+			this.isRecording = false;
+		}
+	}
+	
+	private void checkForCoordinates(SemanticGraph dependencies, IndexedWord root) {
+		// TODO extract coordinates
+		
+		// TODO if found, execute astar
+		
+		
+	}
+	
+	private void checkForSavePlan(SemanticGraph dependencies, IndexedWord root) {
+		// TODO check for save command and name
+		
+		String name = " ";
+		
+		this.paths.put(name, this.currentPath);
+	}
+	
+	
+	
+	// ***** aStar search ****
+	
+	public void astar(int x, int y) {
+		Position target = new Position(x, y);
+
+		State current = new State(posRow, posCol, h1(posRow, posCol, target), 0);
+		PriorityQueue<State> open = new PriorityQueue<>();
+		HashMap<State, State> previous = new HashMap<>();
+
+		open.add(current);
+
+		LinkedList<State> closed = new LinkedList<State>();
+
+		while (!open.isEmpty()) {
+			System.out.println("loop");
+
+			current = open.poll();
+			closed.add(current);
+
+			if (current.row == target.row && current.col == target.col) {
+				// toRemove.add(target);
+				closed.clear();
+				open.clear();
+				open.add(current);
+				break;
+			}
+
+			// check the 4 possible successors
+			int[] iVals = { -1, 0, 0, 1 };
+			int[] jVals = { 0, -1, 1, 0 };
+			for (int k = 0; k < 4; k++) {
+				int i = current.row + iVals[k];
+				int j = current.col + jVals[k];
+
+				State successor;
+
+				if (containsPos(i, j, open)) {
+					for (State p : open) {
+						if (p.row == i && p.row == j) {
+							successor = p;
+							if (successor.gScore < current.gScore) {
+								current.gScore = successor.gScore;
+								current.fScore = current.gScore + h1(i, j, target);
+								previous.put(successor, current);
+							}
+						}
+					}
+				} else if ((env.getTileStatus(i, j) != TileStatus.IMPASSABLE) && !containsPos(i, j, closed)) {
+					int gScore = current.gScore + 1;
+					int fScore = gScore + h1(i, j, target);
+					successor = new State(i, j, fScore, gScore);
+					open.add(successor);
+					previous.put(successor, current);
+					System.out.println("added");
+				}
+
+			}
+
+		}
+		if (open.isEmpty()) {
+			return;
+		}
+
+		currentPath = buildPath(current, previous);
+
+		System.out.println("path added");
+	}
+
+	class State implements Comparable<State> {
+		public int row;
+		public int col;
+		public int fScore;
+		public int gScore;
+
+		State(int row, int col, int fScore, int gScore) {
+			this.row = row;
+			this.col = col;
+			this.fScore = fScore;
+			this.gScore = gScore;
+		}
+
+		public boolean equals(State other) {
+			return row == other.row && col == other.col;
+		}
+
+		public boolean equals(Position other) {
+			return row == other.row && col == other.col;
+		}
+
+		@Override
+		public int compareTo(State other) {
+			return (this.fScore - other.fScore);
+		}
+
+	}
+
+	private int h1(int row, int col, Position target) {
+		return Math.abs(row - target.row) + Math.abs(col - target.col);
+	}
+
+	private boolean containsPos(int row, int col, Iterable<State> T) {
+
+		for (State p : T) {
+			if (p.col == col && p.row == row)
+				return true;
+		}
+		return false;
+	}
+	
+	private LinkedList<Action> buildPath(State pos, HashMap<State, State> previous) {
+		LinkedList<Action> route = new LinkedList<>();
+		State last;
+
+		while (previous.containsKey(pos)) {
+			last = previous.get(pos);
+
+			if (pos.col - last.col > 0) {
+				route.add(Action.MOVE_RIGHT);
+			} else if (pos.col - last.col < 0) {
+				route.add(Action.MOVE_LEFT);
+			} else if (pos.row - last.row > 0) {
+				route.add(Action.MOVE_DOWN);
+			} else {
+				route.add(Action.MOVE_UP);
+			}
+
+			pos = last;
+		}
+		Collections.reverse(route);
+		return route;
 	}
 	
 }
