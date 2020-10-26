@@ -9,7 +9,6 @@ import java.util.PriorityQueue;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Scanner;
-import java.util.Set;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.IndexedWord;
@@ -158,7 +157,7 @@ public class Robot {
 			this.checkForStartRecording(name);
 			
 			if(this.isRecording) {
-				System.out.println("Recording path");
+				//System.out.println("Recording path");
 				
 				this.checkForEndRecording(name);
 				this.checkForCoordinates(graph, root);
@@ -180,15 +179,12 @@ public class Robot {
 			}
 			
 			// combine
+			if(this.checkForCombinePlan(name))
+				return Action.DO_NOTHING;
 			
+			if(this.checkForSavePlan(name))
+				return Action.DO_NOTHING;
 			
-			// symmetry
-			
-			
-			
-			
-			
-			// type of root
 			String type = root.tag();
 			switch (type) {
 			case "VB":
@@ -380,7 +376,6 @@ public class Robot {
 		List<Pair<GrammaticalRelation, IndexedWord>> s = dependencies.childPairs(root);
 		
 		for (Pair<GrammaticalRelation, IndexedWord> p : s) { // first pass to check for negation
-			GrammaticalRelation r = p.first;
 			IndexedWord w = p.second;
 			word = w.originalText();
 
@@ -403,7 +398,6 @@ public class Robot {
 		List<Pair<GrammaticalRelation, IndexedWord>> s = dependencies.childPairs(root);
 		
 		for (Pair<GrammaticalRelation, IndexedWord> p : s) { // first pass to check for negation
-			GrammaticalRelation r = p.first;
 			IndexedWord w = p.second;
 			word = w.originalText();
 
@@ -500,7 +494,6 @@ public class Robot {
 	private String getGreetingForTime() {
         Date dt = new Date();
         int hours = dt.getHours();
-        int min = dt.getMinutes();
         String greeting = "";
 
         if(hours>=1 && hours<=12){
@@ -585,40 +578,59 @@ public class Robot {
 		ArrayList<Integer> coords = new ArrayList<>();
 		List<IndexedWord> words = dependencies.topologicalSort();
 		
-		System.out.println(words.toString());
+		//System.out.println(words.toString());
 		for (IndexedWord w : words) {
 			if(w.tag().equals("CD")) {
 				coords.add(Integer.parseInt(w.originalText()));
-				System.out.println("found a coordinate");
+				//System.out.println("found a coordinate");
 			}
 		}
 		
 		// if found, execute astar
 		if(coords.size() >= 2) {
-			System.out.println("Found coordinates");
+			//System.out.println("Found coordinates");
 			astar(coords.get(0), coords.get(1));
 		}
 		
 	}
 	
-	private void checkForSavePlan(String input) {
-		// TODO check for save command and name
+	private boolean checkForCombinePlan(String input) {
+		
+		if(input.contains("combine")) {
+			this.currentPath = new LinkedList<>();
+			
+			for(String s : this.paths.keySet()) {
+				if(input.contains(s)) {
+					this.currentPath.addAll(this.paths.get(s));
+				}
+			}
+			return true;
+		}
+		
+		return false;
+		
+	}
+	
+	private boolean checkForSavePlan(String input) {
 		String name;
 		if(input.contains("name the plan ")) {
 			name = input.replace("name the plan ", "");
 			System.out.println("Named the plan " + name);
 			this.paths.put(name, this.currentPath);
+			return true;
 		} else if(input.contains("name the path ")) {
 			name = input.replace("name the path ", "");
 			System.out.println("Named the plan " + name);
 			this.paths.put(name, this.currentPath);
+			return true;
 		}
+		
+		return false;
 		
 	}
 	
 	private void checkForExecutePlan(String input) {
-		// TODO check for save command and name
-		String name;
+		
 		if(input.contains("execute plan ")) {
 			executePlan(input.replace("execute plan ", ""));
 		} else if(input.contains("execute path ")) {
@@ -682,7 +694,7 @@ public class Robot {
 	
 	
 	
-	// ***** aStar search ****
+	// ***** astar search methods ****
 	
 	public void astar(int x, int y) {
 		Position target = new Position(x, y);
@@ -745,7 +757,7 @@ public class Robot {
 
 		currentPath = buildPath(current, previous);
 
-		System.out.println("path added");
+		System.out.println("path found");
 	}
 
 	class State implements Comparable<State> {
