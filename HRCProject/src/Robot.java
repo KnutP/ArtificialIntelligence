@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -67,6 +68,7 @@ public class Robot {
 	private boolean isExecuting;
 	private HashMap<String, LinkedList<Action>> paths;
 	private LinkedList<Action> currentPath;
+	private Iterator<Action> pathIterator;
 
 	private Properties props;
 	private StanfordCoreNLP pipeline;
@@ -125,12 +127,13 @@ public class Robot {
 	 */
 	public Action getAction() {
 		
-		if(isExecuting) {
-			// return next step in path
-			
+		if(this.isExecuting) {
+			if(this.pathIterator.hasNext()) {
+				return this.pathIterator.next();
+			} else {
+				this.isExecuting = false;
+			}
 		}
-		
-		
 		
 		Annotation annotation;
 		System.out.print("> ");
@@ -140,6 +143,7 @@ public class Robot {
 		annotation = new Annotation(name);
 		pipeline.annotate(annotation);
 		List<CoreMap> sentences = annotation.get(CoreAnnotations.SentencesAnnotation.class);
+		
 		if (sentences != null && !sentences.isEmpty()) {
 			CoreMap sentence = sentences.get(0);
 			SemanticGraph graph = sentence
@@ -155,19 +159,32 @@ public class Robot {
 			
 			if(this.isRecording) {
 				System.out.println("Recording path");
-				// check for end record tag
+				
 				this.checkForEndRecording(name);
 				
-				// check for coordinates
 				this.checkForCoordinates(graph, root);
 				
-				// name plan
-				
+				this.checkForSavePlan(name);
 				
 				return Action.DO_NOTHING;
 			}
 			
+			// check for path names
+			this.checkForExecutePlan(name);
+
 			
+			// execute paths
+			if(this.isExecuting) {
+				if(this.pathIterator.hasNext()) {
+					return this.pathIterator.next();
+				} else {
+					this.isExecuting = false;
+				}
+			}
+			
+			// combine
+			
+			// symmetry
 			
 			
 			
@@ -566,11 +583,8 @@ public class Robot {
 	}
 	
 	private void checkForCoordinates(SemanticGraph dependencies, IndexedWord root) {
-		// TODO extract coordinates
+		// extract coordinates
 		ArrayList<Integer> coords = new ArrayList<>();
-		
-		
-
 		List<IndexedWord> words = dependencies.topologicalSort();
 		
 		System.out.println(words.toString());
@@ -581,7 +595,7 @@ public class Robot {
 			}
 		}
 		
-		// TODO if found, execute astar
+		// if found, execute astar
 		if(coords.size() >= 2) {
 			System.out.println("Found coordinates");
 			astar(coords.get(0), coords.get(1));
@@ -589,12 +603,50 @@ public class Robot {
 		
 	}
 	
-	private void checkForSavePlan(SemanticGraph dependencies, IndexedWord root) {
+	private void checkForSavePlan(String input) {
 		// TODO check for save command and name
+		String name;
+		if(input.contains("name the plan ")) {
+			name = input.replace("name the plan ", "");
+			System.out.println("Named the plan " + name);
+			this.paths.put(name, this.currentPath);
+		} else if(input.contains("name the path ")) {
+			name = input.replace("name the path ", "");
+			System.out.println("Named the plan " + name);
+			this.paths.put(name, this.currentPath);
+		}
 		
-		String name = " ";
+	}
+	
+	private void checkForExecutePlan(String input) {
+		// TODO check for save command and name
+		String name;
+		if(input.contains("execute plan ")) {
+			name = input.replace("execute plan ", "");
+			System.out.println("Executing plan " + name);
+			
+			this.currentPath = paths.get(name);
+			
+			if(this.currentPath == null) {
+				System.out.println("No path found");
+			}
+			
+			this.isExecuting = true;
+			this.pathIterator = this.currentPath.iterator();
+		} else if(input.contains("execute path ")) {
+			name = input.replace("execute path ", "");
+			System.out.println("Executing plan " + name);
+			
+			this.currentPath = paths.get(name);
+			
+			if(this.currentPath == null) {
+				System.out.println("No path found");
+			}
+			
+			this.isExecuting = true;
+			this.pathIterator = this.currentPath.iterator();
+		}
 		
-		this.paths.put(name, this.currentPath);
 	}
 	
 	
