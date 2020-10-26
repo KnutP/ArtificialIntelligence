@@ -161,9 +161,7 @@ public class Robot {
 				System.out.println("Recording path");
 				
 				this.checkForEndRecording(name);
-				
 				this.checkForCoordinates(graph, root);
-				
 				this.checkForSavePlan(name);
 				
 				return Action.DO_NOTHING;
@@ -172,7 +170,6 @@ public class Robot {
 			// check for path names
 			this.checkForExecutePlan(name);
 
-			
 			// execute paths
 			if(this.isExecuting) {
 				if(this.pathIterator.hasNext()) {
@@ -183,6 +180,7 @@ public class Robot {
 			}
 			
 			// combine
+			
 			
 			// symmetry
 			
@@ -622,31 +620,64 @@ public class Robot {
 		// TODO check for save command and name
 		String name;
 		if(input.contains("execute plan ")) {
-			name = input.replace("execute plan ", "");
-			System.out.println("Executing plan " + name);
-			
-			this.currentPath = paths.get(name);
-			
-			if(this.currentPath == null) {
-				System.out.println("No path found");
-			}
-			
-			this.isExecuting = true;
-			this.pathIterator = this.currentPath.iterator();
+			executePlan(input.replace("execute plan ", ""));
 		} else if(input.contains("execute path ")) {
-			name = input.replace("execute path ", "");
-			System.out.println("Executing plan " + name);
-			
-			this.currentPath = paths.get(name);
-			
-			if(this.currentPath == null) {
-				System.out.println("No path found");
-			}
-			
-			this.isExecuting = true;
-			this.pathIterator = this.currentPath.iterator();
+			executePlan(input.replace("execute path ", ""));
+		}  else if(input.contains("execute symmetric path ")) {
+			executeSymmetricPlan(input.replace("execute symmetric path ", ""));
+		} else if(input.contains("execute symmetric plan ")) {
+			executeSymmetricPlan(input.replace("execute symmetric plan ", ""));
 		}
 		
+	}
+	
+	private void executePlan(String name) {
+		System.out.println("Executing plan " + name);
+		
+		this.currentPath = paths.get(name);
+		
+		if(this.currentPath == null) {
+			System.out.println("No path found");
+		}
+		
+		this.isExecuting = true;
+		this.pathIterator = this.currentPath.iterator();
+		
+	}
+	
+	private void executeSymmetricPlan(String name) {
+		System.out.println("Executing symmetric plan " + name);
+		
+		this.currentPath = paths.get(name);
+		
+		if(this.currentPath == null) {
+			System.out.println("No path found");
+			return;
+		}
+		
+		this.currentPath = getSymmetricPlan(this.currentPath);
+		
+		this.isExecuting = true;
+		this.pathIterator = this.currentPath.iterator();
+		
+	}
+	
+	private LinkedList<Action> getSymmetricPlan(LinkedList<Action> path) {
+		LinkedList<Action> newPath = new LinkedList<>();
+		
+		for(Action a : path) {
+			if(a.equals(Action.MOVE_DOWN)) {
+				newPath.add(Action.MOVE_UP);
+			} else if(a.equals(Action.MOVE_UP)) {
+				newPath.add(Action.MOVE_DOWN);
+			} else if(a.equals(Action.MOVE_RIGHT)) {
+				newPath.add(Action.MOVE_LEFT);
+			} else if(a.equals(Action.MOVE_LEFT)) {
+				newPath.add(Action.MOVE_RIGHT);
+			}
+		}
+		
+		return newPath;
 	}
 	
 	
