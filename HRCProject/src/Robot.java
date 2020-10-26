@@ -8,6 +8,7 @@ import java.util.PriorityQueue;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.Set;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.IndexedWord;
@@ -153,6 +154,7 @@ public class Robot {
 			this.checkForStartRecording(name);
 			
 			if(this.isRecording) {
+				System.out.println("Recording path");
 				// check for end record tag
 				this.checkForEndRecording(name);
 				
@@ -552,20 +554,38 @@ public class Robot {
 	private void checkForStartRecording(String input) {
 		if(input.contains("begin record")) {
 			this.isRecording = true;
+			System.out.println("Recording started");
 		}
 	}
 	
 	private void checkForEndRecording(String input) {
 		if(input.contains("end record")) {
 			this.isRecording = false;
+			System.out.println("Recording finished");
 		}
 	}
 	
 	private void checkForCoordinates(SemanticGraph dependencies, IndexedWord root) {
 		// TODO extract coordinates
+		ArrayList<Integer> coords = new ArrayList<>();
+		
+		
+
+		List<IndexedWord> words = dependencies.topologicalSort();
+		
+		System.out.println(words.toString());
+		for (IndexedWord w : words) {
+			if(w.tag().equals("CD")) {
+				coords.add(Integer.parseInt(w.originalText()));
+				System.out.println("found a coordinate");
+			}
+		}
 		
 		// TODO if found, execute astar
-		
+		if(coords.size() >= 2) {
+			System.out.println("Found coordinates");
+			astar(coords.get(0), coords.get(1));
+		}
 		
 	}
 	
@@ -593,7 +613,6 @@ public class Robot {
 		LinkedList<State> closed = new LinkedList<State>();
 
 		while (!open.isEmpty()) {
-			System.out.println("loop");
 
 			current = open.poll();
 			closed.add(current);
@@ -632,7 +651,6 @@ public class Robot {
 					successor = new State(i, j, fScore, gScore);
 					open.add(successor);
 					previous.put(successor, current);
-					System.out.println("added");
 				}
 
 			}
