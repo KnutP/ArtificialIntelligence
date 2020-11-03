@@ -33,7 +33,7 @@ public class VisualizeSimulation extends JFrame {
 	 */
 	public VisualizeSimulation() {
 		// TODO: change the following to run the simulation on different maps.
-		String filename = "Map1.txt";
+		String filename = "Map30.txt";
 		LinkedList<String> map = new LinkedList<> ();
 	    try {
 			File inputFile = new File(filename);
@@ -47,14 +47,12 @@ public class VisualizeSimulation extends JFrame {
 	    	fileReader.close();
 	    } catch (Exception exception) {
 	    	System.out.println(exception);
+	    	System.exit(0);;
 	    }	
 		
-	    Position robotPos = new Position(0,0); // Modify for multiple robots MIW
-		Environment env = new Environment(map, robotPos); // Modify for multiple robots MIW
-		Robot robot = new Robot(env, robotPos.row, robotPos.col);
-	
 		ArrayList<Robot> robots = new ArrayList<Robot>();
-		robots.add(robot);
+		Environment env = new Environment(map, robots);
+
     	envPanel = new EnvironmentPanel(env, robots);
     	add(envPanel);
 	}
@@ -100,14 +98,14 @@ class EnvironmentPanel extends JPanel{
 //					timer.stop();
 //					printPerformanceMeasure();
 //				}
-//				if (goalConditionMet()) {
-//					timer.stop();
-//					printPerformanceMeasure();
-//				}
+				if (goalConditionMet()) {
+					timer.stop();
+					printPerformanceMeasure();
+				}
 			}
 			
-//			public void printPerformanceMeasure() {
-//				System.out.println("A solution has been found in: " + timesteps + " steps.");
+			public void printPerformanceMeasure() {
+				System.out.println("A solution has been found in: " + timesteps + " steps.");
 //				int num = 0;
 //				for(Robot robot : robots) {
 //					if (robot.getPathFound()) {
@@ -119,7 +117,7 @@ class EnvironmentPanel extends JPanel{
 //					}
 //					num++;
 //				}
-//			}
+			}
 			
 //			public boolean goalConditionMet() {
 //				if (targets.isEmpty()) return true;
@@ -129,6 +127,11 @@ class EnvironmentPanel extends JPanel{
 //				}	
 //				return temp;
 //			}
+			
+			public boolean goalConditionMet() {
+				return env.getNumDirtyTiles() == 0;
+
+		}
 			
 //			public void remove(int row, int col) {
 //				for (int i = 0; i < targets.size(); i++) {
@@ -141,6 +144,12 @@ class EnvironmentPanel extends JPanel{
 			// Gets the new state of the world after robot actions
 			public void updateEnvironment() {
 				timesteps++;
+				//TODO: When asked, uncomment the following 5 lines.
+//				if (((int)(Math.random()*50)) == 0) robots.remove((int)(Math.random()*robots.size()));
+//				if (robots.size() == 0) {
+//					System.out.println("All robots broke. No solution found.");
+//					System.exit(0);
+//				}
 				for(Robot robot : robots) {
 					Action action = robot.getAction();
 					int row = robot.getPosRow();

@@ -1,4 +1,5 @@
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 /**
@@ -15,8 +16,9 @@ public class Environment {
 	private Tile[][] tiles;
 	private int rows, cols;
 	private LinkedList<Position> targets = new LinkedList<>();
+	private ArrayList<Robot> robots;
 	
-	public Environment(LinkedList<String> map, Position robotPos) { // modify for multiple robots MIW
+	public Environment(LinkedList<String> map, ArrayList<Robot> robots) { 
 		this.cols = map.get(0).length();
 		this.rows = map.size();
 		this.tiles = new Tile[rows][cols];
@@ -24,7 +26,10 @@ public class Environment {
 			for (int col = 0; col < this.cols; col++) {
 				char tile = map.get(row).charAt(col);
 				switch(tile) {
-				case 'R': tiles[row][col] = new Tile(TileStatus.CLEAN); robotPos.row = row; robotPos.col = col; break;
+				case 'R': tiles[row][col] = new Tile(TileStatus.CLEAN); {
+					robots.add(new Robot(this, row, col));
+					break;
+				}
 				case 'D': tiles[row][col] = new Tile(TileStatus.DIRTY); break;
 				case 'C': tiles[row][col] = new Tile(TileStatus.CLEAN); break;
 				case 'W': tiles[row][col] = new Tile(TileStatus.IMPASSABLE); break;
@@ -32,16 +37,24 @@ public class Environment {
 				}
 			}
 		}
+		this.robots = robots;
 	}
 	
 	/* Traditional Getters and Setters */
 	public Tile[][] getTiles() { return tiles; }
+	
 	public int getRows() { return this.rows; }
+	
 	public int getCols() { return this.cols; }
 
 	public LinkedList<Position> getTargets(){
 		return (LinkedList<Position>) this.targets.clone();
 	}
+	
+	public ArrayList<Robot> getRobots(){
+		return (ArrayList<Robot>) this.robots.clone();
+	}
+	
 
 	/*
 	 * Returns a the status of a tile at a given [row][col] coordinate
@@ -68,12 +81,24 @@ public class Environment {
 		tiles[x][y].cleanTile();		
 	}
 	
-	/* Counts number of cleaned tiles */
+	/* Counts number of clean tiles */
 	public int getNumCleanedTiles() {
         int count = 0;
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 if (this.tiles[i][j].getStatus() == TileStatus.CLEAN)
+                    count++;
+            }
+        }
+        return count;
+    }
+	
+	/* Counts number of dirty tiles */
+	public int getNumDirtyTiles() {
+        int count = 0;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (this.tiles[i][j].getStatus() == TileStatus.DIRTY)
                     count++;
             }
         }
