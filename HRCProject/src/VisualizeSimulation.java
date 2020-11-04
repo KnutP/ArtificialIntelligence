@@ -33,7 +33,7 @@ public class VisualizeSimulation extends JFrame {
 	 */
 	public VisualizeSimulation() {
 		// TODO: change the following to run the simulation on different maps.
-		String filename = "Map30.txt";
+		String filename = "Map31.txt";
 		LinkedList<String> map = new LinkedList<> ();
 	    try {
 			File inputFile = new File(filename);
@@ -145,11 +145,11 @@ class EnvironmentPanel extends JPanel{
 			public void updateEnvironment() {
 				timesteps++;
 				//TODO: When asked, uncomment the following 5 lines.
-//				if (((int)(Math.random()*50)) == 0) robots.remove((int)(Math.random()*robots.size()));
-//				if (robots.size() == 0) {
-//					System.out.println("All robots broke. No solution found.");
-//					System.exit(0);
-//				}
+				if (((int)(Math.random()*50)) == 0) robots.remove((int)(Math.random()*robots.size()));
+				if (robots.size() == 0) {
+					System.out.println("All robots broke. No solution found.");
+					System.exit(0);
+				}
 				for(Robot robot : robots) {
 					Action action = robot.getAction();
 					int row = robot.getPosRow();
