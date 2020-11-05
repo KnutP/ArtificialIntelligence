@@ -66,7 +66,14 @@ public class Robot {
 		}
 		
 		if(this.pathIterator != null && this.pathIterator.hasNext()) {
-			return this.pathIterator.next();
+			Action next = this.pathIterator.next();
+			
+			if(isNextTileOccupied(next)) {
+				this.pathIterator = null;
+				return Action.CLEAN;
+			} else {
+				return next;
+			}
 		}
 		
 		return Action.DO_NOTHING;
@@ -256,4 +263,27 @@ public class Robot {
 		return this.target;
 	}
 
+	private boolean isNextTileOccupied(Action a) {
+		int row = this.posRow;
+		int col = this.posCol;
+		
+		if(a == Action.MOVE_DOWN) {
+			row++;
+		} else if (a == Action.MOVE_UP) {
+			row--;
+		} else if (a == Action.MOVE_LEFT) {
+			col--;
+		} else if (a == Action.MOVE_RIGHT) {
+			col++;
+		}
+		
+		for(Robot r : this.env.getRobots()) {
+			if(row == r.getPosRow() && col == r.getPosCol() && !r.equals(this)) {
+				return true;
+			}
+			
+		}
+		
+		return false;
+	}
 }
