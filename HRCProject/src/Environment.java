@@ -127,6 +127,11 @@ public class Environment {
 	    		tiles[row][col].getStatus() != TileStatus.IMPASSABLE;
 	}
 	
+	public void updatePolicies() {
+		this.calculateUtilityMatrix();
+		this.generatePolicyMatrix();
+	}
+	
 	private void calculateUtilityMatrix() {
 		double[][] rewards = new double[this.rows][this.cols];
 		
@@ -208,12 +213,17 @@ public class Environment {
 
 		}
 		 
-		for(double[] row : utilityMatrix) {
-			DecimalFormat df = new DecimalFormat("0.00");
-		    Arrays.stream(row).forEach(e -> System.out.print(df.format(e) + " " ));
-		    System.out.println();
-		}
+		// print utility matrix
+//		for(double[] row : utilityMatrix) {
+//			DecimalFormat df = new DecimalFormat("0.00");
+//		    Arrays.stream(row).forEach(e -> System.out.print(df.format(e) + " " ));
+//		    System.out.println();
+//		}
 		
+	}
+	
+	public Action getActionFromPolicy(int row, int col) {
+		return this.policyMatrix[row][col];
 	}
 
 	private void generatePolicyMatrix() {
@@ -289,22 +299,23 @@ public class Environment {
 			}
 		}
 		
-		for(Action[] row : this.policyMatrix) {
-			for(Action a : row) {
-				if(a.equals(Action.MOVE_UP))
-					System.out.print("u, ");
-				else if(a.equals(Action.MOVE_DOWN))
-					System.out.print("d, ");
-				else if(a.equals(Action.MOVE_LEFT))
-					System.out.print("l, ");
-				else if(a.equals(Action.MOVE_RIGHT))
-					System.out.print("r, ");
-				else if(a.equals(Action.DO_NOTHING))
-					System.out.print("-, ");
-				
-			}
-			System.out.println();
-		}
+		// print policy gradient
+//		for(Action[] row : this.policyMatrix) {
+//			for(Action a : row) {
+//				if(a.equals(Action.MOVE_UP))
+//					System.out.print("u, ");
+//				else if(a.equals(Action.MOVE_DOWN))
+//					System.out.print("d, ");
+//				else if(a.equals(Action.MOVE_LEFT))
+//					System.out.print("l, ");
+//				else if(a.equals(Action.MOVE_RIGHT))
+//					System.out.print("r, ");
+//				else if(a.equals(Action.DO_NOTHING))
+//					System.out.print("-, ");
+//				
+//			}
+//			System.out.println();
+//		}
 		
 	}
 }

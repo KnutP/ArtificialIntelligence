@@ -77,6 +77,12 @@ public class Robot {
 	private LinkedList<Action> path;
 	private Position target;
 	private boolean toCleanOrNotToClean;
+	
+	private boolean isStuck;
+	
+	private int lastPosRow;
+	private int lastPosCol;
+	private boolean isFirst;
 
 
 	/**
@@ -100,6 +106,11 @@ public class Robot {
 		
 		this.toCleanOrNotToClean = false;
 		this.target = new Position(this.posRow, this.posCol);
+		this.isStuck = false;
+		
+		this.lastPosRow = posRow;
+		this.lastPosCol = posCol;
+		this.isFirst = true;
 
 	}
 
@@ -133,7 +144,7 @@ public class Robot {
 	 * functions.
 	 */
 	public Action getAction() {
-		
+
 		if(this.isExecuting) {
 			if(this.pathIterator.hasNext()) {
 				return this.pathIterator.next();
@@ -142,6 +153,32 @@ public class Robot {
 			}
 		}
 		
+		if(this.env.getTileStatus(posRow, posCol).equals(TileStatus.DIRTY)) {
+			this.isFirst = false;
+			return Action.CLEAN;
+		}
+		
+		// get action from policy gradient and ask for confirmation.
+		Action policy = this.env.getActionFromPolicy(this.posRow, this.posCol);
+		this.env.updatePolicies();
+		
+		if(this.posRow == this.lastPosRow && this.posCol == this.lastPosCol) {
+			this.isStuck = true;
+		} else {
+			this.isStuck = false;
+		}
+		
+		this.lastPosRow = this.posRow;
+		this.lastPosCol = this.posCol;
+		
+		if(!this.isStuck || this.isFirst) {
+			return policy;
+		}
+		
+		System.out.println("I am located at row " + this.posRow + ", column " + this.posCol + ".");
+		System.out.println("I am stuck. What should I do?");
+		
+
 		Annotation annotation;
 		System.out.print("> ");
 		sc = new Scanner(System.in);
@@ -157,6 +194,14 @@ public class Robot {
 
 			// get root of parse graph
 			IndexedWord root = graph.getFirstRoot();
+			
+			
+			// check for confirmation of policy action
+//			if(this.isPolicyConfirmed(graph, root)) {
+//				return policy;
+//			} 
+			// Not doing policy action, so check for other commands
+			
 			
 			this.checkForStartRecording(name);
 			
@@ -619,11 +664,21 @@ public class Robot {
 			name = input.replace("name the plan ", "");
 			System.out.println("Named the plan " + name);
 			this.paths.put(name, this.currentPath);
+			
+			for(Robot r : this.env.getRobots()) {
+				r.setPaths(this.paths);
+			}
+			
 			return true;
 		} else if(input.contains("name the path ")) {
 			name = input.replace("name the path ", "");
 			System.out.println("Named the plan " + name);
 			this.paths.put(name, this.currentPath);
+			
+			for(Robot r : this.env.getRobots()) {
+				r.setPaths(this.paths);
+			}
+			
 			return true;
 		}
 		
@@ -694,7 +749,30 @@ public class Robot {
 		return newPath;
 	}
 	
+	private boolean isPolicyConfirmed(SemanticGraph dependencies, IndexedWord root) {
+		String word = root.originalText();
+		
+		if (word.equalsIgnoreCase("yes") || word.equalsIgnoreCase("yeah") || word.equalsIgnoreCase("yep") || word.equalsIgnoreCase("sure") || word.equalsIgnoreCase("go")) {
+			return true;
+		}
+		
+		List<Pair<GrammaticalRelation, IndexedWord>> s = dependencies.childPairs(root);
+		
+		for (Pair<GrammaticalRelation, IndexedWord> p : s) {
+			IndexedWord w = p.second;
+			word = w.originalText();
+
+			if (word.equalsIgnoreCase("yes") || word.equalsIgnoreCase("yeah") || word.equalsIgnoreCase("yep") || word.equalsIgnoreCase("sure") || word.equalsIgnoreCase("go")) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
 	
+	public void setPaths(HashMap<String, LinkedList<Action>> paths) {
+		this.paths = paths;
+	}
 	
 	// ***** astar search methods ****
 	
