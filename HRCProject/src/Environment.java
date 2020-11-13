@@ -1,4 +1,5 @@
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -152,7 +153,6 @@ public class Environment {
 		while(currentError > maxError) {
 			currentError = 0;
 			tempMatrix = new double[this.rows][this.cols];
-			System.out.println("Iteration " + currentError);
 			
 			for(int i = 0; i < this.rows; i++) {
 				for(int j = 0; j < this.cols; j++) {
@@ -204,14 +204,15 @@ public class Environment {
 					
 				}
 			}
-			System.out.println("Current error: " + currentError);
 			this.utilityMatrix = tempMatrix;
-
 
 		}
 		 
-        for (double[] row : this.utilityMatrix) 
-            System.out.println(Arrays.toString(row));
+		for(double[] row : utilityMatrix) {
+			DecimalFormat df = new DecimalFormat("0.00");
+		    Arrays.stream(row).forEach(e -> System.out.print(df.format(e) + " " ));
+		    System.out.println();
+		}
 		
 	}
 
@@ -224,10 +225,12 @@ public class Environment {
 				if(this.getTileStatus(i, j).equals(TileStatus.IMPASSABLE)) {
 					this.policyMatrix[i][j] = Action.DO_NOTHING;
 					continue;
-				} else if(this.getTileStatus(i, j).equals(TileStatus.DIRTY)) {
-					this.policyMatrix[i][j] = Action.DO_NOTHING;
-					continue;
-				}
+				} 
+				// TODO: Ask Dr. Wollowski if this is correct
+//				else if(this.getTileStatus(i, j).equals(TileStatus.DIRTY)) {
+//					this.policyMatrix[i][j] = Action.DO_NOTHING;
+//					continue;
+//				}
 				
 				Double[] directions = new Double[4];
 				double[] utilityVals = new double[4];
@@ -301,7 +304,6 @@ public class Environment {
 				
 			}
 			System.out.println();
-			
 		}
 		
 	}
